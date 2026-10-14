@@ -3,76 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PK Twitter 🇵🇰</title>
+  <title>PK Twitter - Professional Edition 🇵🇰</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
 </head>
-<body class="bg-black text-white min-h-screen flex justify-center pb-16">
-  <div class="w-full max-w-lg border-x border-gray-800 min-h-screen flex flex-col">
+<body class="min-h-screen flex justify-center pb-20">
+  
+  <div class="w-full max-w-xl border-x border-gray-800 min-h-screen flex flex-col relative">
     
     <!-- Top Header -->
-    <div class="sticky top-0 bg-black/80 backdrop-blur border-b border-gray-800 p-4 flex justify-between items-center z-10">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-sky-500 flex items-center justify-center font-bold text-white">M</div>
-        <h1 class="text-lg font-bold text-sky-400">PK Twitter 🇵🇰</h1>
+    <header class="sticky top-0 bg-black/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex justify-between items-center z-20">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('feed')">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg">PK</div>
+        <h1 class="text-lg font-extrabold tracking-wide text-sky-400">PK Twitter 🇵🇰</h1>
       </div>
-      <button onclick="switchTab('profile')" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-full font-semibold">View Profile</button>
-    </div>
+      <button onclick="switchTab('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-full font-bold transition">My Profile</button>
+    </header>
 
-    <!-- Feed Tab -->
-    <div id="feedTab" class="p-4 flex-1">
-      <!-- Create Post Box -->
-      <div class="border-b border-gray-800 pb-4">
-        <div class="flex gap-3">
-          <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-white">M</div>
-          <div class="w-full">
-            <textarea id="tweetInput" class="w-full bg-transparent text-white text-lg focus:outline-none resize-none placeholder-gray-500" rows="3" placeholder="What is happening in Pakistan?!"></textarea>
-            
-            <!-- Image/Video Preview -->
-            <div id="mediaPreviewContainer" class="hidden relative my-2">
-              <img id="imagePreview" class="w-full max-h-60 object-cover rounded-2xl border border-gray-800 hidden" />
-              <video id="videoPreview" class="w-full max-h-60 rounded-2xl border border-gray-800 hidden" controls></video>
-              <button onclick="clearMedia()" class="absolute top-2 right-2 bg-black/70 hover:bg-black rounded-full p-1 text-white"><i class="fas fa-times px-1"></i></button>
-            </div>
+    <!-- Main Content Area -->
+    <main class="flex-1 pb-16">
+      
+      <!-- FEED TAB -->
+      <div id="feedTab" class="block">
+        
+        <!-- Post Composer Box -->
+        <div class="border-b border-gray-800 p-4">
+          <div class="flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex-shrink-0 flex items-center justify-center font-bold text-white">M</div>
+            <div class="w-full">
+              <textarea id="tweetInput" class="w-full bg-transparent text-white text-lg focus:outline-none resize-none placeholder-gray-600 pt-2" rows="3" placeholder="What is happening in Pakistan?!"></textarea>
+              
+              <!-- Media Preview Box -->
+              <div id="mediaPreviewContainer" class="hidden relative my-2">
+                <img id="imagePreview" class="w-full max-h-72 object-cover rounded-2xl border border-gray-800 hidden" />
+                <video id="videoPreview" class="w-full max-h-72 rounded-2xl border border-gray-800 hidden" controls></video>
+                <button onclick="clearMedia()" class="absolute top-2 right-2 bg-black/70 hover:bg-black rounded-full w-8 h-8 flex items-center justify-center text-white text-sm"><i class="fas fa-times"></i></button>
+              </div>
 
-            <!-- Action Bar -->
-            <div class="flex justify-between items-center border-t border-gray-800/60 pt-3 mt-2">
-              <label class="text-sky-400 hover:bg-sky-500/10 p-2 rounded-full cursor-pointer transition">
-                <i class="far fa-image text-lg"></i>
-                <input type="file" id="mediaInput" accept="image/*,video/*" class="hidden" onchange="handleMediaSelect(event)">
-              </label>
-              <button onclick="postTweet()" class="bg-sky-500 hover:bg-sky-600 font-bold px-5 py-1.5 rounded-full text-sm">Post</button>
+              <!-- Composer Actions -->
+              <div class="flex justify-between items-center border-t border-gray-800/80 pt-3 mt-2">
+                <div class="flex gap-4 text-sky-400 text-lg">
+                  <label class="hover:bg-sky-500/10 w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition">
+                    <i class="far fa-image"></i>
+                    <input type="file" id="mediaInput" accept="image/*,video/*" class="hidden" onchange="handleMediaSelect(event)">
+                  </label>
+                  <label class="hover:bg-sky-500/10 w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition">
+                    <i class="fas fa-video"></i>
+                    <input type="file" accept="video/*" class="hidden" onchange="handleMediaSelect(event)">
+                  </label>
+                  <button onclick="addEmoji('🔥')" class="hover:bg-sky-500/10 w-9 h-9 rounded-full flex items-center justify-center text-sm">🔥</button>
+                </div>
+                <button onclick="postTweet()" class="bg-sky-500 hover:bg-sky-400 font-bold px-5 py-2 rounded-full text-sm text-black transition shadow-md">Post</button>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Trending Bar -->
+        <div class="border-b border-gray-800 p-4 bg-gray-950/50">
+          <h3 class="font-bold text-sm text-gray-400 mb-2">Trending in Pakistan 🇵🇰</h3>
+          <div class="flex gap-2 overflow-x-auto pb-1 text-xs">
+            <span class="bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-full whitespace-nowrap text-sky-400 font-medium">#PKTwitter</span>
+            <span class="bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-full whitespace-nowrap text-sky-400 font-medium">#MultanTech</span>
+            <span class="bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-full whitespace-nowrap text-sky-400 font-medium">#VercelApps</span>
+          </div>
+        </div>
+
+        <!-- Feed List -->
+        <div id="feed" class="divide-y divide-gray-800">
+          <!-- Sample Default Tweet -->
+          <article class="p-4 hover:bg-gray-950/40 transition">
+            <div class="flex gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex-shrink-0 flex items-center justify-center font-bold text-white">P</div>
+              <div class="w-full">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-white">Pakistan Official</span>
+                  <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+                  <span class="text-gray-500 text-sm">· 2h</span>
+                </div>
+                <p class="text-white mt-1 text-sm leading-relaxed">Welcome to the newly upgraded PK Twitter application! Build, post media, and share your thoughts seamlessly. 🇵🇰🚀</p>
+                <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-6">
+                  <button class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> 14</button>
+                  <button class="hover:text-green-500 flex items-center gap-2"><i class="fas fa-retweet"></i> 5</button>
+                  <button onclick="toggleLike(this)" class="hover:text-pink-500 flex items-center gap-2"><i class="far fa-heart"></i> <span class="like-count">32</span></button>
+                  <button class="hover:text-sky-400"><i class="far fa-share-square"></i></button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+      </div>
+
+      <!-- SEARCH / EXPLORE TAB -->
+      <div id="exploreTab" class="hidden p-4">
+        <div class="relative mb-4">
+          <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+          <input type="text" placeholder="Search PK Twitter" class="w-full bg-gray-900 border border-gray-800 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-sky-500">
+        </div>
+        <h2 class="font-bold text-lg mb-3">Trends for you</h2>
+        <div class="space-y-4">
+          <div class="bg-gray-900/50 border border-gray-800/80 p-3 rounded-xl">
+            <p class="text-xs text-gray-500">Technology · Trending</p>
+            <p class="font-bold text-sm mt-0.5">#WebDevelopment</p>
+            <p class="text-xs text-gray-400 mt-1">12.5K Posts</p>
+          </div>
+          <div class="bg-gray-900/50 border border-gray-800/80 p-3 rounded-xl">
+            <p class="text-xs text-gray-500">Pakistan · Trending</p>
+            <p class="font-bold text-sm mt-0.5">#Multan</p>
+            <p class="text-xs text-gray-400 mt-1">8.2K Posts</p>
           </div>
         </div>
       </div>
 
-      <!-- Feed Posts -->
-      <div id="feed" class="space-y-4 mt-4"></div>
-    </div>
-
-    <!-- Profile Tab (Hidden by default) -->
-    <div id="profileTab" class="p-4 hidden flex-1">
-      <div class="bg-gray-900 rounded-2xl p-4 text-center border border-gray-800">
-        <div class="w-20 h-20 rounded-full bg-sky-500 mx-auto flex items-center justify-center text-2xl font-bold border-4 border-black">M</div>
-        <h2 class="text-xl font-bold mt-2">Makki</h2>
-        <p class="text-gray-400 text-sm">@makki_user</p>
-        <p class="text-gray-300 text-sm mt-3">Building digital apps & tools in Multan, Pakistan 🇵🇰</p>
-        <div class="flex justify-center gap-6 mt-4 text-sm text-gray-400">
-          <span><strong class="text-white">124</strong> Following</span>
-          <span><strong class="text-white">1.2K</strong> Followers</span>
+      <!-- NOTIFICATIONS TAB -->
+      <div id="notificationsTab" class="hidden p-4">
+        <h2 class="font-bold text-xl mb-4">Notifications</h2>
+        <div class="space-y-4 text-sm">
+          <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
+            <i class="fas fa-heart text-pink-500 text-lg"></i>
+            <p><strong class="text-white">Ali</strong> and 5 others liked your post.</p>
+          </div>
+          <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
+            <i class="fas fa-user-plus text-sky-400 text-lg"></i>
+            <p><strong class="text-white">Hassan</strong> started following you.</p>
+          </div>
         </div>
       </div>
-      <button onclick="switchTab('feed')" class="mt-4 w-full bg-sky-500 text-white font-bold py-2 rounded-full">Back to Feed</button>
-    </div>
+
+      <!-- PROFILE TAB -->
+      <div id="profileTab" class="hidden">
+        <div class="h-32 bg-gradient-to-r from-sky-600 to-blue-800"></div>
+        <div class="px-4 pb-4 border-b border-gray-800 relative">
+          <div class="flex justify-between items-end">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 border-4 border-black -mt-10 flex items-center justify-center font-bold text-2xl text-white shadow-xl">M</div>
+            <button onclick="alert('Profile settings opened!')" class="border border-gray-700 hover:bg-gray-900 font-bold px-4 py-1.5 rounded-full text-sm transition">Edit profile</button>
+          </div>
+          <div class="mt-3">
+            <h2 class="text-xl font-extrabold">Makki</h2>
+            <p class="text-gray-500 text-sm">@makki_user</p>
+          </div>
+          <p class="text-sm mt-3 text-gray-200">Full Stack Web Creator from Multan, Pakistan 🇵🇰 Building custom tools and lightning-fast web apps.</p>
+          <div class="flex gap-6 mt-3 text-sm text-gray-500">
+            <span><strong class="text-white">180</strong> Following</span>
+            <span><strong class="text-white">1.4K</strong> Followers</span>
+          </div>
+        </div>
+        <div class="p-4 text-center text-gray-500 text-sm">Your posts will appear here.</div>
+      </div>
+
+    </main>
 
     <!-- Bottom Navigation Bar -->
-    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-black border-t border-gray-800 flex justify-around py-3 text-xl text-gray-400">
-      <button onclick="switchTab('feed')" class="hover:text-sky-400"><i class="fas fa-home text-sky-400"></i></button>
-      <button onclick="alert('Explore feature coming soon!')" class="hover:text-sky-400"><i class="fas fa-search"></i></button>
-      <button onclick="alert('Notifications feature coming soon!')" class="hover:text-sky-400"><i class="fas fa-bell"></i></button>
-      <button onclick="switchTab('profile')" class="hover:text-sky-400"><i class="fas fa-user"></i></button>
-    </div>
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/90 backdrop-blur-md border-t border-gray-800 flex justify-around py-3 text-xl text-gray-400 z-30">
+      <button onclick="switchTab('feed')" id="navFeed" class="hover:text-sky-400 text-sky-400"><i class="fas fa-home"></i></button>
+      <button onclick="switchTab('explore')" id="navExplore" class="hover:text-sky-400"><i class="fas fa-search"></i></button>
+      <button onclick="switchTab('notifications')" id="navNotif" class="hover:text-sky-400"><i class="far fa-bell"></i></button>
+      <button onclick="switchTab('profile')" id="navProfile" class="hover:text-sky-400"><i class="far fa-user"></i></button>
+    </nav>
 
   </div>
 
@@ -82,14 +176,12 @@
     function handleMediaSelect(e) {
       const file = e.target.files[0];
       if (!file) return;
-      
       const reader = new FileReader();
       reader.onload = function(event) {
         selectedMedia = event.target.result;
         const container = document.getElementById('mediaPreviewContainer');
         const img = document.getElementById('imagePreview');
         const video = document.getElementById('videoPreview');
-        
         container.classList.remove('hidden');
         if (file.type.startsWith('image/')) {
           mediaType = 'image';
@@ -114,13 +206,17 @@
       document.getElementById('videoPreview').src = '';
     }
 
+    function addEmoji(emoji) {
+      document.getElementById('tweetInput').value += emoji;
+    }
+
     function postTweet() {
       const input = document.getElementById('tweetInput');
       if (!input.value.trim() && !selectedMedia) return;
 
       const feed = document.getElementById('feed');
-      const tweet = document.createElement('div');
-      tweet.className = 'border-b border-gray-800 pb-4 pt-2';
+      const article = document.createElement('article');
+      article.className = 'p-4 hover:bg-gray-950/40 transition animate-fadeIn';
 
       let mediaHTML = '';
       if (selectedMedia) {
@@ -131,26 +227,28 @@
         }
       }
 
-      tweet.innerHTML = `
+      article.innerHTML = `
         <div class="flex gap-3">
-          <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-white">M</div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex-shrink-0 flex items-center justify-center font-bold text-white">M</div>
           <div class="w-full">
             <div class="flex items-center gap-2">
               <span class="font-bold text-white">Makki</span>
-              <span class="text-gray-500 text-sm">@makki_user · Just now</span>
+              <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+              <span class="text-gray-500 text-sm">· Just now</span>
             </div>
-            <p class="text-white mt-1 text-base">${input.value}</p>
+            <p class="text-white mt-1 text-sm leading-relaxed">${escapeHtml(input.value)}</p>
             ${mediaHTML}
-            <div class="flex justify-between text-gray-500 text-sm mt-3 pr-6 max-w-md">
-              <button onclick="this.classList.toggle('text-sky-400')" class="flex items-center gap-2 hover:text-sky-400"><i class="far fa-comment"></i> 0</button>
-              <button onclick="this.classList.toggle('text-green-500')" class="flex items-center gap-2 hover:text-green-500"><i class="fas fa-retweet"></i> 0</button>
-              <button onclick="toggleLike(this)" class="flex items-center gap-2 hover:text-pink-500"><i class="far fa-heart"></i> <span class="like-count">0</span></button>
+            <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-6">
+              <button class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> 0</button>
+              <button class="hover:text-green-500 flex items-center gap-2"><i class="fas fa-retweet"></i> 0</button>
+              <button onclick="toggleLike(this)" class="hover:text-pink-500 flex items-center gap-2"><i class="far fa-heart"></i> <span class="like-count">0</span></button>
+              <button class="hover:text-sky-400"><i class="far fa-share-square"></i></button>
             </div>
           </div>
         </div>
       `;
 
-      feed.prepend(tweet);
+      feed.prepend(article);
       input.value = '';
       clearMedia();
     }
@@ -159,7 +257,6 @@
       const icon = btn.querySelector('i');
       const countEl = btn.querySelector('.like-count');
       let count = parseInt(countEl.innerText);
-      
       if (icon.classList.contains('far')) {
         icon.classList.replace('far', 'fas');
         btn.classList.add('text-pink-500');
@@ -171,15 +268,34 @@
       }
     }
 
-    function switchTab(tab) {
-      if (tab === 'feed') {
+    function switchTab(tabName) {
+      ['feedTab', 'exploreTab', 'notificationsTab', 'profileTab'].forEach(t => {
+        document.getElementById(t).classList.add('hidden');
+      });
+      ['navFeed', 'navExplore', 'navNotif', 'navProfile'].forEach(n => {
+        document.getElementById(n).classList.remove('text-sky-400');
+        document.getElementById(n).classList.add('text-gray-400');
+      });
+
+      if (tabName === 'feed') {
         document.getElementById('feedTab').classList.remove('hidden');
-        document.getElementById('profileTab').classList.add('hidden');
-      } else if (tab === 'profile') {
+        document.getElementById('navFeed').classList.add('text-sky-400');
+      } else if (tabName === 'explore') {
+        document.getElementById('exploreTab').classList.remove('hidden');
+        document.getElementById('navExplore').classList.add('text-sky-400');
+      } else if (tabName === 'notifications') {
+        document.getElementById('notificationsTab').classList.remove('hidden');
+        document.getElementById('navNotif').classList.add('text-sky-400');
+      } else if (tabName === 'profile') {
         document.getElementById('profileTab').classList.remove('hidden');
-        document.getElementById('feedTab').classList.add('hidden');
+        document.getElementById('navProfile').classList.add('text-sky-400');
       }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
   </script>
 </body>
-</html>
+  </html>
+  
