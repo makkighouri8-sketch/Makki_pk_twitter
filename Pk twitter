@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PK Twitter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen flex justify-center">
+  <div class="w-full max-w-lg border-x border-gray-800 p-4">
+    <h1 class="text-xl font-bold border-b border-gray-800 pb-3 text-sky-400">PK Twitter 🇵🇰</h1>
+    <div class="my-4">
+      <textarea id="tweetInput" class="w-full bg-gray-900 text-white p-3 rounded-lg border border-gray-700 focus:outline-none" placeholder="What is happening in Pakistan?!"></textarea>
+      <button onclick="postTweet()" class="mt-2 bg-sky-500 hover:bg-sky-600 font-bold px-5 py-2 rounded-full float-right">Post</button>
+    </div>
+    <div id="feed" class="mt-14 space-y-4"></div>
+  </div>
+
+  <script>
+    function postTweet() {
+      const input = document.getElementById('tweetInput');
+      if (!input.value.trim()) return;
+      const feed = document.getElementById('feed');
+      const tweet = document.createElement('div');
+      tweet.className = 'border-b border-gray-800 pb-3';
+      tweet.innerHTML = `<p class="font-bold text-gray-400">@pakistani_user</p><p class="text-white">${input.value}</p>`;
+      feed.prepend(tweet);
+      input.value = '';
+    }
+  </script>
+</body>
+</html>
