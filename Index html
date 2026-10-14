@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PK Twitter - Advanced Pro Edition 🇵🇰</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen flex justify-center pb-20 select-none">
+
+  <div class="w-full max-w-xl border-x border-gray-800 min-h-screen flex flex-col relative bg-black">
+    
+    <!-- Top Bar -->
+    <header class="sticky top-0 bg-black/90 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex justify-between items-center z-30">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchPage('feed')">
+        <div class="w-9 h-9 rounded-full bg-sky-500 flex items-center justify-center font-extrabold text-black shadow-lg">PK</div>
+        <h1 class="text-lg font-extrabold tracking-tight text-sky-400">PK Twitter Pro 🇵🇰</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="switchPage('bookmarks')" class="text-xs bg-gray-900 border border-gray-800 hover:bg-gray-800 px-3 py-1.5 rounded-full font-bold text-sky-400 transition"><i class="far fa-bookmark mr-1"></i> Saved</button>
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 border border-gray-800 hover:bg-gray-800 px-3 py-1.5 rounded-full font-bold transition">Profile</button>
+      </div>
+    </header>
+
+    <!-- Content Section -->
+    <main class="flex-1 pb-16">
+      
+      <!-- FEED PAGE -->
+      <section id="pageFeed" class="page-view block">
+        <!-- New Composer Box -->
+        <div class="border-b border-gray-800 p-4 bg-gray-950/30">
+          <div class="flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black">M</div>
+            <div class="w-full">
+              <textarea id="postInput" class="w-full bg-transparent text-white text-lg focus:outline-none resize-none placeholder-gray-600 pt-1" rows="3" placeholder="Share updates, news or video clips..."></textarea>
+              
+              <!-- Media Upload Preview -->
+              <div id="mediaBox" class="hidden relative my-2">
+                <img id="imgPrev" class="w-full max-h-72 object-cover rounded-2xl border border-gray-800 hidden" />
+                <video id="vidPrev" class="w-full max-h-72 rounded-2xl border border-gray-800 hidden" controls></video>
+                <button onclick="removeMedia()" class="absolute top-2 right-2 bg-black/80 hover:bg-black rounded-full w-8 h-8 flex items-center justify-center text-white text-sm border border-gray-700"><i class="fas fa-times"></i></button>
+              </div>
+
+              <div class="flex justify-between items-center border-t border-gray-800/80 pt-3 mt-2">
+                <div class="flex gap-3 text-sky-400 text-lg items-center">
+                  <label class="hover:bg-sky-500/10 w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition">
+                    <i class="far fa-image"></i>
+                    <input type="file" accept="image/*,video/*" class="hidden" onchange="processMedia(event)">
+                  </label>
+                  <button onclick="appendTag('#Pakistan')" class="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-full">#Pakistan</button>
+                  <button onclick="appendTag('#TechPK')" class="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-full">#TechPK</button>
+                </div>
+                <button onclick="createNewPost()" class="bg-sky-500 hover:bg-sky-400 font-bold px-5 py-2 rounded-full text-sm text-black transition shadow-md">Post Tweet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feed Stream -->
+        <div id="timeline" class="divide-y divide-gray-800">
+          <article class="p-4 hover:bg-gray-950/40 transition" id="post-1">
+            <div class="flex gap-3">
+              <div class="w-10 h-10 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center font-bold text-white">N</div>
+              <div class="w-full">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-white">News Central</span>
+                    <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+                    <span class="text-gray-500 text-sm">· 30m</span>
+                  </div>
+                  <button onclick="toggleFollow(this)" class="text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition">Follow</button>
+                </div>
+                <p class="text-white mt-2 text-sm leading-relaxed">Breaking: Welcome to PK Twitter Pro! Now with interactive comment replies, bookmarking, and link sharing features integrated! 🇵🇰✨</p>
+                
+                <!-- Post Controls -->
+                <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
+                  <button onclick="toggleCommentBox('1')" class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> <span id="cm-cnt-1">1</span></button>
+                  <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2"><i class="fas fa-retweet"></i> <span class="rt-cnt">2</span></button>
+                  <button onclick="toggleLike(this)" class="hover:text-pink-500 flex items-center gap-2"><i class="far fa-heart"></i> <span class="like-cnt">18</span></button>
+                  <button onclick="toggleBookmark(this)" class="hover:text-sky-400"><i class="far fa-bookmark"></i></button>
+                  <button onclick="sharePost('1')" class="hover:text-sky-400"><i class="far fa-share-square"></i></button>
+                </div>
+
+                <!-- Interactive Reply / Comment Section -->
+                <div id="commentSection-1" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+                  <div class="flex gap-2 mb-2">
+                    <input type="text" id="cm-input-1" placeholder="Write a reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+                    <button onclick="addComment('1')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full">Reply</button>
+                  </div>
+                  <div id="cm-list-1" class="space-y-1.5 text-xs text-gray-300">
+                    <div class="bg-gray-900/40 p-2 rounded-xl"><strong class="text-sky-400">@usman:</strong> Super clean update! 🔥</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- BOOKMARKS PAGE -->
+      <section id="pageBookmarks" class="page-view hidden p-4">
+        <h2 class="font-extrabold text-lg mb-3"><i class="far fa-bookmark text-sky-400 mr-2"></i> Bookmarked Tweets</h2>
+        <div id="bookmarkList" class="space-y-3 text-sm text-gray-500 text-center py-8">
+          No saved tweets yet. Click the bookmark icon on any post to save it here!
+        </div>
+      </section>
+
+      <!-- EXPLORE PAGE -->
+      <section id="pageExplore" class="page-view hidden p-4">
+        <div class="relative mb-4">
+          <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+          <input type="text" placeholder="Search hashtags or news..." class="w-full bg-gray-900 border border-gray-800 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-sky-500 text-sm">
+        </div>
+        <h2 class="font-extrabold text-lg mb-3">Popular in Pakistan</h2>
+        <div class="space-y-3">
+          <div class="bg-gray-900/60 border border-gray-800 p-3.5 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="text-xs text-gray-500">Trends · Tech</p>
+              <p class="font-bold text-sm text-sky-400">#PakistaniCreators</p>
+              <p class="text-xs text-gray-400 mt-0.5">24.1K Tweets</p>
+            </div>
+            <i class="fas fa-arrow-trend-up text-sky-400"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS PAGE -->
+      <section id="pageNotif" class="page-view hidden p-4">
+        <h2 class="font-extrabold text-xl mb-4">Activity Alerts</h2>
+        <div class="space-y-4 text-sm">
+          <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
+            <i class="fas fa-heart text-pink-500 text-lg"></i>
+            <p><strong class="text-white">Kamran</strong> liked your post.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE PAGE -->
+      <section id="pageProfile" class="page-view hidden">
+        <div class="h-32 bg-gradient-to-r from-sky-500 to-blue-700"></div>
+        <div class="px-4 pb-4 border-b border-gray-800 relative">
+          <div class="flex justify-between items-end">
+            <div class="w-20 h-20 rounded-full bg-sky-500 border-4 border-black -mt-10 flex items-center justify-center font-extrabold text-2xl text-black shadow-xl">M</div>
+            <button onclick="alert('Profile Updated!')" class="border border-gray-700 hover:bg-gray-900 font-bold px-4 py-1.5 rounded-full text-sm transition">Edit profile</button>
+          </div>
+          <div class="mt-3">
+            <h2 class="text-xl font-extrabold flex items-center gap-1.5">Makki <i class="fas fa-check-circle text-sky-400 text-sm"></i></h2>
+            <p class="text-gray-500 text-sm">@makki_user</p>
+          </div>
+          <p class="text-sm mt-3 text-gray-200">Digital Tool Developer & Creator from Multan, Pakistan 🇵🇰</p>
+          <div class="flex gap-6 mt-3 text-sm text-gray-500">
+            <span><strong class="text-white">320</strong> Following</span>
+            <span><strong class="text-white">2.5K</strong> Followers</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/95 backdrop-blur-md border-t border-gray-800 flex justify-around py-3 text-xl text-gray-400 z-40">
+      <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition"><i class="fas fa-home"></i></button>
+      <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition"><i class="fas fa-search"></i></button>
+      <button onclick="switchPage('bookmarks')" id="navBookmarks" class="hover:text-sky-400 transition"><i class="far fa-bookmark"></i></button>
+      <button onclick="switchPage('notif')" id="navNotif" class="hover:text-sky-400 transition"><i class="far fa-bell"></i></button>
+      <button onclick="switchPage('profile')" id="navProfile" class="hover:text-sky-400 transition"><i class="far fa-user"></i></button>
+    </nav>
+
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    let activeMedia = null, mediaKind = null, postCounter = 2;
+
+    function switchPage(pageID) {
+      ['feed', 'bookmarks', 'explore', 'notif', 'profile'].forEach(p => {
+        document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1)).classList.add('hidden');
+        const navBtn = document.getElementById('nav' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (navBtn) {
+          navBtn.classList.remove('text-sky-400');
+          navBtn.classList.add('text-gray-400');
+        }
+      });
+
+      document.getElementById('page' + pageID.charAt(0).toUpperCase() + pageID.slice(1)).classList.remove('hidden');
+      const activeNav = document.getElementById('nav' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
+      if (activeNav) {
+        activeNav.classList.remove('text-gray-400');
+        activeNav.classList.add('text-sky-400');
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function processMedia(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        activeMedia = evt.target.result;
+        const box = document.getElementById('mediaBox');
+        const img = document.getElementById('imgPrev');
+        const vid = document.getElementById('vidPrev');
+        box.classList.remove('hidden');
+        if (file.type.startsWith('image/')) {
+          mediaKind = 'img';
+          img.src = activeMedia; img.classList.remove('hidden'); vid.classList.add('hidden');
+        } else if (file.type.startsWith('video/')) {
+          mediaKind = 'vid';
+          vid.src = activeMedia; vid.classList.remove('hidden'); img.classList.add('hidden');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeMedia() {
+      activeMedia = null; mediaKind = null;
+      document.getElementById('mediaBox').classList.add('hidden');
+      document.getElementById('imgPrev').src = '';
+      document.getElementById('vidPrev').src = '';
+    }
+
+    function appendTag(tag) {
+      document.getElementById('postInput').value += ' ' + tag;
+    }
+
+    function createNewPost() {
+      const textVal = document.getElementById('postInput').value;
+      if (!textVal.trim() && !activeMedia) return;
+
+      const pid = postCounter++;
+      const timeline = document.getElementById('timeline');
+      const article = document.createElement('article');
+      article.className = 'p-4 hover:bg-gray-950/40 transition';
+      article.id = 'post-' + pid;
+
+      let mediaHtml = '';
+      if (activeMedia) {
+        if (mediaKind === 'img') {
+          mediaHtml = `<img src="${activeMedia}" class="w-full max-h-80 object-cover rounded-2xl mt-3 border border-gray-800"/>`;
+        } else if (mediaKind === 'vid') {
+          mediaHtml = `<video src="${activeMedia}" controls class="w-full max-h-80 rounded-2xl mt-3 border border-gray-800"></video>`;
+        }
+      }
+
+      article.innerHTML = `
+        <div class="flex gap-3">
+          <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black">M</div>
+          <div class="w-full">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white">Makki</span>
+                <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+                <span class="text-gray-500 text-sm">· Just now</span>
+              </div>
+            </div>
+            <p class="text-white mt-1 text-sm leading-relaxed">${escapeHTML(textVal)}</p>
+            ${mediaHtml}
+            <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
+              <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
+              <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
+              <button onclick="toggleLike(this)" class="hover:text-pink-500 flex items-center gap-2"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
+              <button onclick="toggleBookmark(this)" class="hover:text-sky-400"><i class="far fa-bookmark"></i></button>
+              <button onclick="sharePost('${pid}')" class="hover:text-sky-400"><i class="far fa-share-square"></i></button>
+            </div>
+
+            <!-- Comment Section -->
+            <div id="commentSection-${pid}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+              <div class="flex gap-2 mb-2">
+                <input type="text" id="cm-input-${pid}" placeholder="Write a reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+                <button onclick="addComment('${pid}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full">Reply</button>
+              </div>
+              <div id="cm-list-${pid}" class="space-y-1.5 text-xs text-gray-300"></div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      timeline.prepend(article);
+      document.getElementById('postInput').value = '';
+      removeMedia();
+    }
+
+    function toggleLike(btn) {
+      const icon = btn.querySelector('i');
+      const cnt = btn.querySelector('.like-cnt');
+      let val = parseInt(cnt.innerText);
+      if (icon.classList.contains('far')) {
+        icon.classList.replace('far', 'fas');
+        btn.classList.add('text-pink-500');
+        cnt.innerText = val + 1;
+      } else {
+        icon.classList.replace('fas', 'far');
+        btn.classList.remove('text-pink-500');
+        cnt.innerText = val - 1;
+      }
+    }
+
+    function toggleRetweet(btn) {
+      const cnt = btn.querySelector('.rt-cnt');
+      let val = parseInt(cnt.innerText);
+      if (btn.classList.contains('text-green-500')) {
+        btn.classList.remove('text-green-500');
+        cnt.innerText = val - 1;
+      } else {
+        btn.classList.add('text-green-500');
+        cnt.innerText = val + 1;
+      }
+    }
+
+    function toggleBookmark(btn) {
+      const icon = btn.querySelector('i');
+      if (icon.classList.contains('far')) {
+        icon.classList.replace('far', 'fas');
+        btn.classList.add('text-sky-400');
+        alert('Tweet saved to bookmarks!');
+      } else {
+        icon.classList.replace('fas', 'far');
+        btn.classList.remove('text-sky-400');
+      }
+    }
+
+    function toggleFollow(btn) {
+      if (btn.innerText === 'Follow') {
+        btn.innerText = 'Following';
+        btn.className = 'text-xs bg-sky-500 text-black font-bold px-3 py-1 rounded-full transition';
+      } else {
+        btn.innerText = 'Follow';
+        btn.className = 'text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition';
+      }
+    }
+
+    function toggleCommentBox(id) {
+      const box = document.getElementById('commentSection-' + id);
+      box.classList.toggle('hidden');
+    }
+
+    function addComment(id) {
+      const input = document.getElementById('cm-input-' + id);
+      if (!input.value.trim()) return;
+      
+      const list = document.getElementById('cm-list-' + id);
+      const cntEl = document.getElementById('cm-cnt-' + id);
+      
+      const div = document.createElement('div');
+      div.className = 'bg-gray-900/40 p-2 rounded-xl';
+      div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
+      
+      list.appendChild(div);
+      cntEl.innerText = parseInt(cntEl.innerText) + 1;
+      input.value = '';
+    }
+
+    function sharePost(id) {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Post link copied to clipboard!');
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
