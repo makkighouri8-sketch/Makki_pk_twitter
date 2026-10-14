@@ -1,17 +1,17 @@
-/* PK Twitter Pro - Dynamic Followers & AI Algorithm (app.js) */
+/* PK Twitter Pro with Integrated Tringo AI (Grok Style Engine) */
 
 let activeMedia = null;
 let mediaKind = null;
 let postCounter = 2;
 let followingCount = 320; 
-let followersCount = 2500; // Live Followers State
+let followersCount = 2500;
 let savedPostsData = []; 
 let notificationsData = [  
-  { id: 1, type: 'follow', text: 'News Central started following you!', time: '2m ago' },
-  { id: 2, type: 'like', text: 'PK AI Bot liked your recent update.', time: '10m ago' }
+  { id: 1, type: 'follow', text: 'Tringo AI started following your profile.', time: '1m ago' },
+  { id: 2, type: 'like', text: 'Tringo AI liked your recent tweet.', time: '5m ago' }
 ];
 
-// Page Navigation
+// Navigation System
 function switchPage(pageID) {
   ['feed', 'explore', 'notif', 'profile'].forEach(p => {
     const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
@@ -61,7 +61,7 @@ function switchProfileTab(tab) {
   }
 }
 
-// Modal System
+// Modal Controllers
 function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
 function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
@@ -96,7 +96,7 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Publish New Post + AI Response & Follower Growth Algorithm
+// Publish Post + Tringo AI Grok-style Interaction Trigger
 function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -139,7 +139,7 @@ function createNewModalPost() {
 
         <div id="commentSection-${pid}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
-            <input type="text" id="cm-input-${pid}" placeholder="Write a reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+            <input type="text" id="cm-input-${pid}" placeholder="Ask Tringo AI or reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
             <button onclick="addComment('${pid}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full">Reply</button>
           </div>
           <div id="cm-list-${pid}" class="space-y-1.5 text-xs text-gray-300"></div>
@@ -154,52 +154,53 @@ function createNewModalPost() {
   closePostModal();
   switchPage('feed');
 
-  // Trigger AI Response and Automatic Follower Gain after 1.5 seconds
+  // Trigger Tringo AI (Grok Style Response)
   setTimeout(() => {
-    triggerAIBotResponse(pid, textVal);
-  }, 1500);
+    triggerTringoAIResponse(pid, textVal);
+  }, 1200);
 }
 
-// AI Bot & Organic Follower Growth
-function triggerAIBotResponse(postId, userText) {
+// Tringo AI Engine (Grok Style)
+function triggerTringoAIResponse(postId, userText) {
   const list = document.getElementById('cm-list-' + postId);
   const cntEl = document.getElementById('cm-cnt-' + postId);
   const followersEl = document.getElementById('profileFollowersCount');
 
   if (list && cntEl) {
-    let aiReply = "Aala post hai Makki bhai! 🇵🇰🚀";
+    let aiReply = "Tringo AI analyzing: Wah Makki bhai, kya behtareen update hai! ⚡🤖";
     const lower = userText.toLowerCase();
     
     if (lower.includes('pakistan') || lower.includes('multan')) {
-      aiReply = "Multan Tech ecosystem represents! 🔥 Sehr-e-Awliya Zindabad.";
-    } else if (lower.includes('code') || lower.includes('app')) {
-      aiReply = "Production grade deployment smooth lag rahi hai! 💻✨";
+      aiReply = "Tringo AI Intel: Multan ka tech scene tezi se grow kar raha hai! 🇵🇰🚀";
+    } else if (lower.includes('code') || lower.includes('vercel') || lower.includes('ai')) {
+      aiReply = "Tringo AI Intel: Code structure 100% optimized aur Vercel cloud par fully secure hai! 💡🔥";
+    } else if (lower.includes('hello') || lower.includes('hi')) {
+      aiReply = "Hello Makki! Main aapka apna Tringo AI hoon, bataiye kya analyze karun?";
     }
 
     const aiDiv = document.createElement('div');
-    aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2 rounded-xl mt-1';
-    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-robot mr-1"></i> PK AI Bot:</strong> ${aiReply}`;
+    aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1 shadow-md';
+    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-brain mr-1"></i> Tringo AI (Grok):</strong> ${aiReply}`;
     
     list.appendChild(aiDiv);
     cntEl.innerText = parseInt(cntEl.innerText) + 1;
   }
 
-  // Automatically increase Followers when active on app
+  // Organic Follower Growth via Tringo AI Engagement
   followersCount++;
   if (followersEl) {
     followersEl.innerText = followersCount;
   }
 
-  // Push notifications
   notificationsData.unshift({
-    id: Date.now(), type: 'follow', text: 'A new user started following your profile!', time: 'Just now'
+    id: Date.now(), type: 'follow', text: 'Tringo AI brought a new organic follower to your profile!', time: 'Just now'
   });
   notificationsData.unshift({
-    id: Date.now(), type: 'comment', text: 'PK AI Bot replied to your tweet!', time: 'Just now'
+    id: Date.now(), type: 'comment', text: 'Tringo AI analyzed and replied to your post.', time: 'Just now'
   });
 }
 
-// Following Counter Algorithm (Jab aap kisi ko follow karein)
+// Following Algorithm
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
   
@@ -209,7 +210,7 @@ function toggleFollow(btn) {
     followingCount++; 
 
     notificationsData.unshift({
-      id: Date.now(), type: 'follow', text: 'You are now following a new account.', time: 'Just now'
+      id: Date.now(), type: 'follow', text: 'You started following a new account.', time: 'Just now'
     });
   } else {
     btn.innerText = 'Follow';
@@ -233,7 +234,7 @@ function toggleBookmark(btn, pid) {
     if (!savedPostsData.some(p => p.id === pid)) {
       savedPostsData.push({ id: pid, html: postElement.innerHTML });
     }
-    alert('Post Saved to Profile Bookmarks!');
+    alert('Saved to Profile Bookmarks!');
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-sky-400');
@@ -286,5 +287,58 @@ function toggleRetweet(btn) {
 }
 
 function toggleCommentBox(id) {
-  const section = document.getElementById('commentSection
-    
+  const section = document.getElementById('commentSection-' + id);
+  if (section) section.classList.toggle('hidden');
+}
+
+function addComment(id) {
+  const input = document.getElementById('cm-input-' + id);
+  if (!input.value.trim()) return;
+
+  const list = document.getElementById('cm-list-' + id);
+  const cntEl = document.getElementById('cm-cnt-' + id);
+
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900/40 p-2 rounded-xl';
+  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
+
+  list.appendChild(div);
+  cntEl.innerText = parseInt(cntEl.innerText) + 1;
+  input.value = '';
+}
+
+// Render Notifications
+function renderNotifications() {
+  const notifContainer = document.getElementById('pageNotif');
+  if (!notifContainer) return;
+
+  let htmlContent = `<h2 class="font-extrabold text-xl mb-4">Activity Notifications</h2><div class="space-y-4 text-sm">`;
+  
+  notificationsData.forEach(n => {
+    let iconClass = 'fas fa-heart text-pink-500 text-lg';
+    if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
+    if (n.type === 'comment') iconClass = 'fas fa-brain text-sky-400 text-lg';
+
+    htmlContent += `
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <i class="${iconClass}"></i>
+          <p class="text-gray-200">${escapeHTML(n.text)}</p>
+        </div>
+        <span class="text-xs text-gray-500">${n.time}</span>
+      </div>
+    `;
+  });
+
+  htmlContent += `</div>`;
+  notifContainer.innerHTML = htmlContent;
+}
+
+function sharePost(id) {
+  navigator.clipboard.writeText(window.location.href);
+  alert('Post link copied to clipboard!');
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
