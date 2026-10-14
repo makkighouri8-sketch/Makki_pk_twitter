@@ -1,16 +1,17 @@
-/* PK Twitter Pro - Complete Algorithmic State & Notification Engine (app.js) */
+/* PK Twitter Pro - Main App Script (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
 let postCounter = 2;
 let followingCount = 320; 
-let savedPostsData = []; // Storage array for Bookmarks algorithm
-let notificationsData = [  // Storage array for Notifications algorithm
-  { id: 1, type: 'like', text: 'Ali Raza liked your recent tweet.', time: '10m ago' },
-  { id: 2, type: 'follow', text: 'Usman started following your profile.', time: '1h ago' }
+let followersCount = 2500;
+let savedPostsData = []; 
+let notificationsData = [  
+  { id: 1, type: 'like', text: 'PK AI Bot liked your tweet.', time: '2m ago' },
+  { id: 2, type: 'follow', text: 'Welcome to PK Twitter platform!', time: '1h ago' }
 ];
 
-// Tab & Page Navigation System
+// Page Navigation
 function switchPage(pageID) {
   ['feed', 'explore', 'notif', 'profile'].forEach(p => {
     const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
@@ -32,7 +33,6 @@ function switchPage(pageID) {
     activeNav.classList.add('text-sky-400');
   }
 
-  // If opening notifications tab, re-render latest algorithmic notifications
   if (pageID === 'notif') {
     renderNotifications();
   }
@@ -40,7 +40,7 @@ function switchPage(pageID) {
   window.scrollTo(0, 0);
 }
 
-// Profile Inner Tabs Switcher
+// Profile Tab Navigation (Posts vs Saved)
 function switchProfileTab(tab) {
   const postsCont = document.getElementById('profPostsContainer');
   const savedCont = document.getElementById('profSavedContainer');
@@ -57,21 +57,14 @@ function switchProfileTab(tab) {
     postsCont.classList.add('hidden');
     btnSaved.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400';
     btnPosts.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
-    renderSavedBookmarks(); // Render algorithmic bookmarks view
+    renderSavedBookmarks(); 
   }
 }
 
-// Post Modal Controllers
-function openPostModal() {
-  document.getElementById('postModal').classList.remove('hidden');
-}
+// Modal Handlers
+function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
+function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
-function closePostModal() {
-  document.getElementById('postModal').classList.add('hidden');
-  removeModalMedia();
-}
-
-// Media Selection Algorithm
 function processModalMedia(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -85,23 +78,16 @@ function processModalMedia(e) {
     box.classList.remove('hidden');
 
     if (file.type.startsWith('image/')) {
-      mediaKind = 'img';
-      img.src = activeMedia;
-      img.classList.remove('hidden');
-      vid.classList.add('hidden');
+      mediaKind = 'img'; img.src = activeMedia; img.classList.remove('hidden'); vid.classList.add('hidden');
     } else if (file.type.startsWith('video/')) {
-      mediaKind = 'vid';
-      vid.src = activeMedia;
-      vid.classList.remove('hidden');
-      img.classList.add('hidden');
+      mediaKind = 'vid'; vid.src = activeMedia; vid.classList.remove('hidden'); img.classList.add('hidden');
     }
   };
   reader.readAsDataURL(file);
 }
 
 function removeModalMedia() {
-  activeMedia = null;
-  mediaKind = null;
+  activeMedia = null; mediaKind = null;
   const box = document.getElementById('modalMediaBox');
   if (box) box.classList.add('hidden');
   const img = document.getElementById('modalImgPrev');
@@ -110,7 +96,7 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Publish New Post
+// Publish New Post + AI Response
 function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -120,7 +106,6 @@ function createNewModalPost() {
   const article = document.createElement('article');
   article.className = 'p-4 hover:bg-gray-950/40 transition post-item';
   article.id = 'post-' + pid;
-  article.setAttribute('data-content', textVal);
 
   let mediaHtml = '';
   if (activeMedia) {
@@ -142,13 +127,13 @@ function createNewModalPost() {
             <span class="text-gray-500 text-sm">· Just now</span>
           </div>
         </div>
-        <p class="text-white mt-1 text-sm leading-relaxed post-text">${escapeHTML(textVal)}</p>
+        <p class="text-white mt-1 text-sm leading-relaxed">${escapeHTML(textVal)}</p>
         ${mediaHtml}
         <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
           <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
           <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
           <button onclick="toggleLike(this, '${pid}')" class="hover:text-pink-500 flex items-center gap-2"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
-          <button onclick="toggleBookmark(this, '${pid}')" class="hover:text-sky-400 bookmark-btn"><i class="far fa-bookmark"></i></button>
+          <button onclick="toggleBookmark(this, '${pid}')" class="hover:text-sky-400"><i class="far fa-bookmark"></i></button>
           <button onclick="sharePost('${pid}')" class="hover:text-sky-400"><i class="far fa-share-square"></i></button>
         </div>
 
@@ -168,76 +153,62 @@ function createNewModalPost() {
   document.getElementById('modalPostInput').value = '';
   closePostModal();
   switchPage('feed');
+
+  // Trigger AI Bot
+  setTimeout(() => {
+    triggerAIBotResponse(pid, textVal);
+  }, 1200);
 }
 
-// ================= ALGORITHMIC INTERACTION HANDLERS =================
+// AI Bot Logic
+function triggerAIBotResponse(postId, userText) {
+  const list = document.getElementById('cm-list-' + postId);
+  const cntEl = document.getElementById('cm-cnt-' + postId);
+  if (!list || !cntEl) return;
 
-// 1. Like Algorithm + Notification Trigger
-function toggleLike(btn, pid) {
-  const icon = btn.querySelector('i');
-  const cnt = btn.querySelector('.like-cnt');
-  let val = parseInt(cnt.innerText);
-
-  if (icon.classList.contains('far')) {
-    icon.classList.replace('far', 'fas');
-    btn.classList.add('text-pink-500');
-    cnt.innerText = val + 1;
-
-    // Push notification algorithm event
-    notificationsData.unshift({
-      id: Date.now(),
-      type: 'like',
-      text: `Your post (#${pid}) received a new like!`,
-      time: 'Just now'
-    });
-  } else {
-    icon.classList.replace('fas', 'far');
-    btn.classList.remove('text-pink-500');
-    cnt.innerText = val - 1;
+  let aiReply = "Aala post hai Makki bhai! 🇵🇰🚀";
+  const lower = userText.toLowerCase();
+  
+  if (lower.includes('pakistan') || lower.includes('multan')) {
+    aiReply = "Multan Tech ecosystem represents! 🔥 Sehr-e-Awliya Zindabad.";
+  } else if (lower.includes('code') || lower.includes('app')) {
+    aiReply = "Production grade deployment smooth lag rahi hai! 💻✨";
   }
+
+  const aiDiv = document.createElement('div');
+  aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2 rounded-xl mt-1';
+  aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-robot mr-1"></i> PK AI Bot:</strong> ${aiReply}`;
+  
+  list.appendChild(aiDiv);
+  cntEl.innerText = parseInt(cntEl.innerText) + 1;
+
+  notificationsData.unshift({
+    id: Date.now(), type: 'comment', text: 'PK AI Bot replied to your post!', time: 'Just now'
+  });
 }
 
-// 2. Retweet Algorithm
-function toggleRetweet(btn) {
-  const cnt = btn.querySelector('.rt-cnt');
-  let val = parseInt(cnt.innerText);
-  if (btn.classList.contains('text-green-500')) {
-    btn.classList.remove('text-green-500');
-    cnt.innerText = val - 1;
-  } else {
-    btn.classList.add('text-green-500');
-    cnt.innerText = val + 1;
-  }
-}
-
-// 3. Bookmarks / Saved Algorithm Engine
+// Live Bookmarks Engine
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
-  
   if (!postElement) return;
-  const postHtmlContent = postElement.innerHTML;
 
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-sky-400');
     
-    // Save to algorithmic array
     if (!savedPostsData.some(p => p.id === pid)) {
-      savedPostsData.push({ id: pid, html: postHtmlContent });
+      savedPostsData.push({ id: pid, html: postElement.innerHTML });
     }
-    alert('Saved to Profile Bookmarks!');
+    alert('Post Saved to Profile Bookmarks!');
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-sky-400');
-    
-    // Remove from algorithmic array
     savedPostsData = savedPostsData.filter(p => p.id !== pid);
-    alert('Removed from bookmarks.');
+    alert('Removed from Bookmarks.');
   }
 }
 
-// Render Saved Bookmarks in Profile Tab
 function renderSavedBookmarks() {
   const container = document.getElementById('bookmarkList');
   if (!container) return;
@@ -245,7 +216,7 @@ function renderSavedBookmarks() {
   if (savedPostsData.length === 0) {
     container.innerHTML = `
       <i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>
-      No saved tweets yet. Click the bookmark icon on any tweet to save it to your profile!
+      No saved bookmarks yet. Tap the bookmark icon on any post to save it here!
     `;
     return;
   }
@@ -259,34 +230,53 @@ function renderSavedBookmarks() {
   });
 }
 
-// 4. Follow Algorithm + Notification Trigger
+// Following / Followers Count Engine
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
+  const followersEl = document.getElementById('profileFollowersCount');
   
   if (btn.innerText === 'Follow') {
     btn.innerText = 'Following';
     btn.className = 'text-xs bg-sky-500 text-black font-bold px-3 py-1 rounded-full transition';
     followingCount++; 
+    followersCount++; 
 
-    // Push notification algorithm event
     notificationsData.unshift({
-      id: Date.now(),
-      type: 'follow',
-      text: 'You successfully followed a new publisher.',
-      time: 'Just now'
+      id: Date.now(), type: 'follow', text: 'You followed a publisher.', time: 'Just now'
     });
   } else {
     btn.innerText = 'Follow';
     btn.className = 'text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition';
     followingCount--; 
+    followersCount--;
   }
 
-  if (followingEl) {
-    followingEl.innerText = followingCount;
+  if (followingEl) followingEl.innerText = followingCount;
+  if (followersEl) followersEl.innerText = followersCount;
+}
+
+function toggleLike(btn, pid) {
+  const icon = btn.querySelector('i');
+  const cnt = btn.querySelector('.like-cnt');
+  let val = parseInt(cnt.innerText);
+
+  if (icon.classList.contains('far')) {
+    icon.classList.replace('far', 'fas'); btn.classList.add('text-pink-500'); cnt.innerText = val + 1;
+  } else {
+    icon.classList.replace('fas', 'far'); btn.classList.remove('text-pink-500'); cnt.innerText = val - 1;
   }
 }
 
-// 5. Comments Algorithm + Notification Trigger
+function toggleRetweet(btn) {
+  const cnt = btn.querySelector('.rt-cnt');
+  let val = parseInt(cnt.innerText);
+  if (btn.classList.contains('text-green-500')) {
+    btn.classList.remove('text-green-500'); cnt.innerText = val - 1;
+  } else {
+    btn.classList.add('text-green-500'); cnt.innerText = val + 1;
+  }
+}
+
 function toggleCommentBox(id) {
   const section = document.getElementById('commentSection-' + id);
   if (section) section.classList.toggle('hidden');
@@ -306,17 +296,8 @@ function addComment(id) {
   list.appendChild(div);
   cntEl.innerText = parseInt(cntEl.innerText) + 1;
   input.value = '';
-
-  // Push notification algorithm event
-  notificationsData.unshift({
-    id: Date.now(),
-    type: 'comment',
-    text: `Your reply was published on post #${id}.`,
-    time: 'Just now'
-  });
 }
 
-// 6. Notifications Render Algorithm
 function renderNotifications() {
   const notifContainer = document.getElementById('pageNotif');
   if (!notifContainer) return;
@@ -326,7 +307,7 @@ function renderNotifications() {
   notificationsData.forEach(n => {
     let iconClass = 'fas fa-heart text-pink-500 text-lg';
     if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'fas fa-comment text-emerald-400 text-lg';
+    if (n.type === 'comment') iconClass = 'fas fa-robot text-sky-400 text-lg';
 
     htmlContent += `
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -350,5 +331,5 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-  
+    }
+                    
