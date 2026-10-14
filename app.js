@@ -1,14 +1,14 @@
-/* PK Twitter Pro - Main App Script (app.js) */
+/* PK Twitter Pro - Dynamic Followers & AI Algorithm (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
 let postCounter = 2;
 let followingCount = 320; 
-let followersCount = 2500;
+let followersCount = 2500; // Live Followers State
 let savedPostsData = []; 
 let notificationsData = [  
-  { id: 1, type: 'like', text: 'PK AI Bot liked your tweet.', time: '2m ago' },
-  { id: 2, type: 'follow', text: 'Welcome to PK Twitter platform!', time: '1h ago' }
+  { id: 1, type: 'follow', text: 'News Central started following you!', time: '2m ago' },
+  { id: 2, type: 'like', text: 'PK AI Bot liked your recent update.', time: '10m ago' }
 ];
 
 // Page Navigation
@@ -40,7 +40,7 @@ function switchPage(pageID) {
   window.scrollTo(0, 0);
 }
 
-// Profile Tab Navigation (Posts vs Saved)
+// Profile Tabs Switcher
 function switchProfileTab(tab) {
   const postsCont = document.getElementById('profPostsContainer');
   const savedCont = document.getElementById('profSavedContainer');
@@ -61,7 +61,7 @@ function switchProfileTab(tab) {
   }
 }
 
-// Modal Handlers
+// Modal System
 function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
 function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
@@ -96,7 +96,7 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Publish New Post + AI Response
+// Publish New Post + AI Response & Follower Growth Algorithm
 function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -154,40 +154,73 @@ function createNewModalPost() {
   closePostModal();
   switchPage('feed');
 
-  // Trigger AI Bot
+  // Trigger AI Response and Automatic Follower Gain after 1.5 seconds
   setTimeout(() => {
     triggerAIBotResponse(pid, textVal);
-  }, 1200);
+  }, 1500);
 }
 
-// AI Bot Logic
+// AI Bot & Organic Follower Growth
 function triggerAIBotResponse(postId, userText) {
   const list = document.getElementById('cm-list-' + postId);
   const cntEl = document.getElementById('cm-cnt-' + postId);
-  if (!list || !cntEl) return;
+  const followersEl = document.getElementById('profileFollowersCount');
 
-  let aiReply = "Aala post hai Makki bhai! 🇵🇰🚀";
-  const lower = userText.toLowerCase();
-  
-  if (lower.includes('pakistan') || lower.includes('multan')) {
-    aiReply = "Multan Tech ecosystem represents! 🔥 Sehr-e-Awliya Zindabad.";
-  } else if (lower.includes('code') || lower.includes('app')) {
-    aiReply = "Production grade deployment smooth lag rahi hai! 💻✨";
+  if (list && cntEl) {
+    let aiReply = "Aala post hai Makki bhai! 🇵🇰🚀";
+    const lower = userText.toLowerCase();
+    
+    if (lower.includes('pakistan') || lower.includes('multan')) {
+      aiReply = "Multan Tech ecosystem represents! 🔥 Sehr-e-Awliya Zindabad.";
+    } else if (lower.includes('code') || lower.includes('app')) {
+      aiReply = "Production grade deployment smooth lag rahi hai! 💻✨";
+    }
+
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2 rounded-xl mt-1';
+    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-robot mr-1"></i> PK AI Bot:</strong> ${aiReply}`;
+    
+    list.appendChild(aiDiv);
+    cntEl.innerText = parseInt(cntEl.innerText) + 1;
   }
 
-  const aiDiv = document.createElement('div');
-  aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2 rounded-xl mt-1';
-  aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-robot mr-1"></i> PK AI Bot:</strong> ${aiReply}`;
-  
-  list.appendChild(aiDiv);
-  cntEl.innerText = parseInt(cntEl.innerText) + 1;
+  // Automatically increase Followers when active on app
+  followersCount++;
+  if (followersEl) {
+    followersEl.innerText = followersCount;
+  }
 
+  // Push notifications
   notificationsData.unshift({
-    id: Date.now(), type: 'comment', text: 'PK AI Bot replied to your post!', time: 'Just now'
+    id: Date.now(), type: 'follow', text: 'A new user started following your profile!', time: 'Just now'
+  });
+  notificationsData.unshift({
+    id: Date.now(), type: 'comment', text: 'PK AI Bot replied to your tweet!', time: 'Just now'
   });
 }
 
-// Live Bookmarks Engine
+// Following Counter Algorithm (Jab aap kisi ko follow karein)
+function toggleFollow(btn) {
+  const followingEl = document.getElementById('profileFollowingCount');
+  
+  if (btn.innerText === 'Follow') {
+    btn.innerText = 'Following';
+    btn.className = 'text-xs bg-sky-500 text-black font-bold px-3 py-1 rounded-full transition';
+    followingCount++; 
+
+    notificationsData.unshift({
+      id: Date.now(), type: 'follow', text: 'You are now following a new account.', time: 'Just now'
+    });
+  } else {
+    btn.innerText = 'Follow';
+    btn.className = 'text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition';
+    followingCount--; 
+  }
+
+  if (followingEl) followingEl.innerText = followingCount;
+}
+
+// Bookmarks Engine
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -230,31 +263,6 @@ function renderSavedBookmarks() {
   });
 }
 
-// Following / Followers Count Engine
-function toggleFollow(btn) {
-  const followingEl = document.getElementById('profileFollowingCount');
-  const followersEl = document.getElementById('profileFollowersCount');
-  
-  if (btn.innerText === 'Follow') {
-    btn.innerText = 'Following';
-    btn.className = 'text-xs bg-sky-500 text-black font-bold px-3 py-1 rounded-full transition';
-    followingCount++; 
-    followersCount++; 
-
-    notificationsData.unshift({
-      id: Date.now(), type: 'follow', text: 'You followed a publisher.', time: 'Just now'
-    });
-  } else {
-    btn.innerText = 'Follow';
-    btn.className = 'text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition';
-    followingCount--; 
-    followersCount--;
-  }
-
-  if (followingEl) followingEl.innerText = followingCount;
-  if (followersEl) followersEl.innerText = followersCount;
-}
-
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -278,58 +286,5 @@ function toggleRetweet(btn) {
 }
 
 function toggleCommentBox(id) {
-  const section = document.getElementById('commentSection-' + id);
-  if (section) section.classList.toggle('hidden');
-}
-
-function addComment(id) {
-  const input = document.getElementById('cm-input-' + id);
-  if (!input.value.trim()) return;
-
-  const list = document.getElementById('cm-list-' + id);
-  const cntEl = document.getElementById('cm-cnt-' + id);
-
-  const div = document.createElement('div');
-  div.className = 'bg-gray-900/40 p-2 rounded-xl';
-  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
-
-  list.appendChild(div);
-  cntEl.innerText = parseInt(cntEl.innerText) + 1;
-  input.value = '';
-}
-
-function renderNotifications() {
-  const notifContainer = document.getElementById('pageNotif');
-  if (!notifContainer) return;
-
-  let htmlContent = `<h2 class="font-extrabold text-xl mb-4">Activity Notifications</h2><div class="space-y-4 text-sm">`;
-  
-  notificationsData.forEach(n => {
-    let iconClass = 'fas fa-heart text-pink-500 text-lg';
-    if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'fas fa-robot text-sky-400 text-lg';
-
-    htmlContent += `
-      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
-        <div class="flex items-center gap-3">
-          <i class="${iconClass}"></i>
-          <p class="text-gray-200">${escapeHTML(n.text)}</p>
-        </div>
-        <span class="text-xs text-gray-500">${n.time}</span>
-      </div>
-    `;
-  });
-
-  htmlContent += `</div>`;
-  notifContainer.innerHTML = htmlContent;
-}
-
-function sharePost(id) {
-  navigator.clipboard.writeText(window.location.href);
-  alert('Post link copied to clipboard!');
-}
-
-function escapeHTML(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-                    
+  const section = document.getElementById('commentSection
+    
