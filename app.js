@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Instant Toggle Color Reset Engine (app.js) */
+/* PK Twitter Pro - Clean Button Toggles (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -171,8 +171,8 @@ function createNewModalPost() {
         <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
           <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
           <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
-          <button onclick="toggleLike(this, '${pid}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
-          <button onclick="toggleBookmark(this, '${pid}')" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
+          <button onclick="toggleLike(this, '${pid}')" id="likeBtn-${pid}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
+          <button onclick="toggleBookmark(this, '${pid}')" id="bmBtn-${pid}" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
           <button onclick="sharePost('${pid}')" class="hover:text-sky-400 text-gray-500"><i class="far fa-share-square"></i></button>
         </div>
 
@@ -245,7 +245,7 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// EXACT LIKE & UNLIKE TOGGLE (Instant Color & Count Reset)
+// ONLY LIKE BUTTON GETS COLOR CHANGE (Pink)
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -262,21 +262,14 @@ function toggleLike(btn, pid) {
   }
 }
 
-// EXACT RETWEET TOGGLE
+// RETWEET (Bas count barhega, koi permanent color change nahi)
 function toggleRetweet(btn) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = parseInt(cnt.innerText);
-
-  if (!btn.classList.contains('text-green-500')) {
-    btn.classList.add('text-green-500');
-    cnt.innerText = val + 1;
-  } else {
-    btn.classList.remove('text-green-500');
-    cnt.innerText = val - 1;
-  }
+  cnt.innerText = val + 1;
 }
 
-// EXACT BOOKMARK & UN-BOOKMARK TOGGLE (Instant Color Reset)
+// ONLY BOOKMARK / SAVE BUTTON GETS COLOR CHANGE (Sky Blue)
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -370,4 +363,4 @@ function sharePost(id) {
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
-    
+      
