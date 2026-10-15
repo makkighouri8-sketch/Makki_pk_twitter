@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Clean Button Toggles & Fixed Retweet Color (app.js) */
+/* PK Twitter Pro - Real Retweet Toggle Logic (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -119,7 +119,7 @@ function processModalMedia(e) {
     if (file.type.startsWith('image/')) {
       mediaKind = 'img'; img.src = activeMedia; img.classList.remove('hidden'); vid.classList.add('hidden');
     } else if (file.type.startsWith('video/')) {
-      mediaKind = 'vid'; vid.src = activeMedia; vid.classList.remove('hidden'); img.classList.add('hidden');
+      mediaKind = 'vid'; vid.src = activeMedia; vid.classList.add('hidden'); img.classList.add('hidden');
     }
   };
   reader.readAsDataURL(file);
@@ -245,7 +245,7 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// ONLY LIKE BUTTON COLOR TOGGLE
+// LIKE & UNLIKE TOGGLE (Pink)
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -262,15 +262,21 @@ function toggleLike(btn, pid) {
   }
 }
 
-// RETWEET (Bas count barhega, koi color change nahi hoga!)
+// REAL RETWEET / REPOST TOGGLE (Ek baar click par +1 aur color green, dobara click par wapas -1 aur color default)
 function toggleRetweet(btn) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = parseInt(cnt.innerText);
-  cnt.innerText = val + 1;
-  // Note: No color classes added or toggled here, keeping color strictly default!
+
+  if (!btn.classList.contains('text-green-500')) {
+    btn.classList.add('text-green-500');
+    cnt.innerText = val + 1;
+  } else {
+    btn.classList.remove('text-green-500');
+    cnt.innerText = val - 1;
+  }
 }
 
-// ONLY BOOKMARK / SAVE BUTTON COLOR TOGGLE
+// BOOKMARK & UN-BOOKMARK TOGGLE (Sky Blue)
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -363,4 +369,4 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
+}
