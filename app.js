@@ -2,7 +2,7 @@
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
-const SUPABASE_ANON_KEY = 'https://nfiplfastxflhmqblcvj.supabase.co/rest/v1/'; 
+const SUPABASE_ANON_KEY = 'Yahan_Apni_Asli_Publishable_Key_Paste_Karein'; // sb_publ... wali key yahan aayegi
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -34,6 +34,7 @@ async function loadPostsFromSupabase() {
 
     if (error) throw error;
 
+    // Purani static post hata kar database wali posts load karein
     timeline.innerHTML = '';
     if (!posts || posts.length === 0) {
       timeline.innerHTML = `<div class="text-center text-gray-500 py-10">Abhi koi post nahi hai. Pehli post share karein!</div>`;
@@ -125,14 +126,7 @@ async function createNewModalPost() {
     document.getElementById('modalPostInput').value = '';
     closePostModal();
     switchPage('feed');
-
     await loadPostsFromSupabase();
-
-    if (data && data[0]) {
-      setTimeout(() => {
-        triggerTringoAIResponse(data[0].id, textVal);
-      }, 1200);
-    }
   } catch (err) {
     console.error('Error saving post:', err.message);
     alert('Post database mein save nahi ho saki: ' + err.message);
@@ -258,11 +252,170 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-function triggerTringoAIResponse(postId, userText) {
-  const list = document.getElementById('cm-list-' + postId);
-  const cntEl = document.getElementById('cm-cnt-' + postId);
-  const followersEl = document.getElementById('profileFollowersCount');
+// Follow Toggle
+function toggleFollow(btn) {
+  const followingEl = document.getElementById('profileFollowingCount');
+  
+  if (btn.innerText === 'Follow') {
+    btn.innerText = 'Following';
+    btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1 rounded-full hover:bg-gray-800 transition';
+    followingCount++; 
+  } else {
+    btn.innerText = 'Follow';
+    btn.className = 'text-xs bg-sky-500 text-black font-bold px-4 py-1.5 rounded-full transition hover:bg-sky-400';
+    followingCount--; 
+  }
 
-  if (list && cntEl) {
-    let aiReply = "Tringo
-            
+  if (followingEl) followingEl.innerText = followingCount;
+}
+
+// LIKE & UNLIKE TOGGLE
+async function toggleLike(btn, pid) {
+  const icon = btn.querySelector('i');
+  const cnt = btn.querySelector('.like-cnt');
+  let val = parseInt(cnt.innerText);
+
+  const newCount = icon.classList.contains('far') ? val + 1 : val - 1;
+
+  if (icon.classList.contains('far')) {
+    icon.classList.replace('far', 'fas');
+    btn.classList.add('text-pink-500');
+  } else {
+    icon.classList.replace('fas', 'far');
+    btn.classList.remove('text-pink-500');
+  }
+  cnt.innerText = newCount;
+
+  try {
+    await supabase.from('posts').update({ likes_count: newCount }).eq('id', pid);
+  } catch (err) {
+    console.error('Error updating likes:', err.message);
+  }
+}
+
+// RETWEET TOGGLE
+async function toggleRetweet(btn, pid) {
+  const cnt = btn.querySelector('.rt-cnt');
+  let val = parseInt(cnt.innerText);
+
+  const newCount = !btn.classList.contains('text-green-500') ? val + 1 : val - 1;
+
+  if (!btn.classList.contains('text-green-500')) {
+    btn.classList.add('text-green-500');
+  } else {
+    btn.classList.remove('text-green-500');
+  }
+  cnt.innerText = newCount;
+
+  try {
+    await supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid);
+  } catch (err) {
+    console.error('Error updating retweets:', err.message);
+  }
+}
+
+// BOOKMARK TOGGLE
+function toggleBookmark(btn, pid) {
+  const icon = btn.querySelector('i');
+  const postElement = document.getElementById('post-' + pid);
+  if (!postElement) return;
+
+  if (icon.classList.contains('far')) {
+    icon.classList.replace('far', 'fas');
+    btn.classList.add('text-sky-400');
+    if (!savedPostsData.some(p => p.id === pid)) {
+      savedPostsData.push({ id: pid, html: postElement.innerHTML });
+    }
+  } else {
+    icon.classList.replace('fas', 'far');
+    btn.classList.remove('text-sky-400');
+    savedPostsData = savedPostsData.filter(p => p.id !== pid);
+  }
+}
+
+function renderSavedBookmarks() {
+  const container = document.getElementById('bookmarkList');
+  if (!container) return;
+
+  if (savedPostsData.length === 0) {
+    container.innerHTML = `<i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.`;
+    return;
+  }
+
+  container.innerHTML = '';
+  savedPostsData.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bg-gray-900/40 border border-gray-800 rounded-2xl p-3 text-left mb-3';
+    wrap.innerHTML = item.html;
+    container.appendChild(wrap);
+  });
+}
+
+function toggleCommentBox(id) {
+  const section = document.getElementById('commentSection-' + id);
+  if (section) section.classList.toggle('hidden');
+}
+
+function addComment(id) {
+  const input = document.getElementById('cm-input-' + id);
+  if (!input.value.trim()) return;
+
+  const list = document.getElementById('cm-list-' + id);
+  const cntEl = document.getElementById('cm-cnt-' + id);
+  const section = document.getElementById('commentSection-' + id);
+
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900/40 p-2 rounded-xl';
+  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
+
+  list.appendChild(div);
+  cntEl.innerText = parseInt(cntEl.innerText) + 1;
+  input.value = '';
+
+  if (section) {
+    section.classList.add('hidden');
+  }
+}
+
+function renderNotifications() {
+  const notifContainer = document.getElementById('pageNotif');
+  if (!notifContainer) return;
+
+  let htmlContent = `<h2 class="font-extrabold text-xl mb-4">Activity Notifications</h2><div class="space-y-4 text-sm">`;
+  
+  notificationsData.forEach(n => {
+    let iconClass = 'fas fa-heart text-pink-500 text-lg';
+    if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
+    if (n.type === 'comment') iconClass = 'text-sky-400 text-lg font-bold';
+
+    let iconSymbol = n.type === 'comment' ? '▲' : `<i class="${iconClass}"></i>`;
+
+    htmlContent += `
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <span class="w-5 text-center">${iconSymbol}</span>
+          <p class="text-gray-200">${escapeHTML(n.text)}</p>
+        </div>
+        <span class="text-xs text-gray-500">${n.time}</span>
+      </div>
+    `;
+  });
+
+  htmlContent += `</div>`;
+  notifContainer.innerHTML = htmlContent;
+}
+
+function sharePost(id) {
+  navigator.clipboard.writeText(window.location.href);
+  alert('Post link copied to clipboard!');
+}
+
+function formatTime(isoString) {
+  if (!isoString) return 'Just now';
+  const date = new Date(isoString);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
