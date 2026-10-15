@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Tringo AI Floating Engine (app.js) */
+/* PK Twitter Pro - TikTok Style Follow & Outline Tringo Engine (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -77,27 +77,27 @@ function askTringoAI() {
 
   const userMsg = input.value;
   const uDiv = document.createElement('div');
-  uDiv.className = 'bg-gray-800 p-2.5 rounded-xl text-right text-gray-200 border border-gray-700';
+  uDiv.className = 'bg-gray-900 p-2 rounded-xl text-right text-gray-200 border border-gray-800';
   uDiv.innerHTML = `<strong>You:</strong> ${escapeHTML(userMsg)}`;
   chatBox.appendChild(uDiv);
 
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: Request processed successfully for Multan dev server!";
+    let response = "Tringo AI: Request processed successfully!";
     const lower = userMsg.toLowerCase();
     if (lower.includes('post') || lower.includes('tweet')) {
-      response = "Tringo AI: Click the floating (+) button on bottom-right to publish instantly!";
+      response = "Tringo AI: Tap the floating (+) button at bottom-right to create posts.";
     } else if (lower.includes('hi') || lower.includes('hello')) {
-      response = "Tringo AI: Welcome Makki! System is fully operational.";
+      response = "Tringo AI: Hello Makki! Systems running smoothly.";
     }
 
     const aiDiv = document.createElement('div');
-    aiDiv.className = 'bg-sky-950/60 p-2.5 rounded-xl border border-sky-800 text-sky-300';
+    aiDiv.className = 'bg-sky-950/40 p-2 rounded-xl border border-sky-900 text-sky-300';
     aiDiv.innerHTML = `<strong>Tringo AI:</strong> ${response}`;
     chatBox.appendChild(aiDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
-  }, 800);
+  }, 700);
 }
 
 // Post Modal Handlers
@@ -135,7 +135,7 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Post Creation Engine
+// Create New Post Engine
 function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -198,14 +198,13 @@ function createNewModalPost() {
   }, 1200);
 }
 
-// Tringo AI Auto Reply Algorithm
 function triggerTringoAIResponse(postId, userText) {
   const list = document.getElementById('cm-list-' + postId);
   const cntEl = document.getElementById('cm-cnt-' + postId);
   const followersEl = document.getElementById('profileFollowersCount');
 
   if (list && cntEl) {
-    let aiReply = "Tringo AI: Wah Makki bhai,zabardast post! ⚡🤖";
+    let aiReply = "Tringo AI: Wah Makki bhai, zabardast post! ⚡🤖";
     const lower = userText.toLowerCase();
     
     if (lower.includes('pakistan') || lower.includes('multan')) {
@@ -214,7 +213,7 @@ function triggerTringoAIResponse(postId, userText) {
 
     const aiDiv = document.createElement('div');
     aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1';
-    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-play mr-1 transform rotate-[-90deg]"></i> Tringo AI:</strong> ${aiReply}`;
+    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="far fa-caret-square-up mr-1"></i> Tringo AI:</strong> ${aiReply}`;
     
     list.appendChild(aiDiv);
     cntEl.innerText = parseInt(cntEl.innerText) + 1;
@@ -228,17 +227,20 @@ function triggerTringoAIResponse(postId, userText) {
   });
 }
 
+// TikTok Style Follow Button Toggle (Solid Blue -> Outline Chota Button)
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
   
   if (btn.innerText === 'Follow') {
     btn.innerText = 'Following';
-    btn.className = 'text-xs bg-sky-500 text-black font-bold px-3 py-1 rounded-full transition';
+    // Switch to TikTok style outline following state
+    btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1 rounded-full hover:bg-gray-800 transition';
     followingCount++; 
     notificationsData.unshift({ id: Date.now(), type: 'follow', text: 'You followed a user.', time: 'Just now' });
   } else {
     btn.innerText = 'Follow';
-    btn.className = 'text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition';
+    // Switch back to solid blue follow state
+    btn.className = 'text-xs bg-sky-500 text-black font-bold px-4 py-1.5 rounded-full transition hover:bg-sky-400';
     followingCount--; 
   }
 
@@ -335,7 +337,7 @@ function renderNotifications() {
   notificationsData.forEach(n => {
     let iconClass = 'fas fa-heart text-pink-500 text-lg';
     if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'fas fa-play text-sky-400 text-lg transform rotate-[-90deg]';
+    if (n.type === 'comment') iconClass = 'far fa-caret-square-up text-sky-400 text-lg';
 
     htmlContent += `
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -359,4 +361,5 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+}
+  
