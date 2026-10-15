@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PK Twitter Pro - Tringo AI Edition 🇵🇰</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS SDK Added -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -30,8 +29,8 @@
       <section id="pageFeed" class="page-view block">
         <div id="timeline" class="divide-y divide-gray-800">
           
-          <!-- Sample Bot/User Post -->
-          <article class="p-4 hover:bg-gray-950/40 transition" id="post-1">
+          <!-- Default Post -->
+          <article class="p-4 hover:bg-gray-950/40 transition post-item" id="post-1">
             <div class="flex gap-3">
               <div class="w-10 h-10 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center font-bold text-white">N</div>
               <div class="w-full">
@@ -47,7 +46,7 @@
                 
                 <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
                   <button onclick="toggleCommentBox('1')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500"><i class="far fa-comment"></i> <span id="cm-cnt-1">0</span></button>
-                  <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">2</span></button>
+                  <button onclick="toggleRetweet(this, '1')" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">2</span></button>
                   <button onclick="toggleLike(this, '1')" id="likeBtn-1" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">15</span></button>
                   <button onclick="toggleBookmark(this, '1')" id="bmBtn-1" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
                   <button onclick="sharePost('1')" class="hover:text-sky-400 text-gray-500"><i class="far fa-share-square"></i></button>
@@ -187,12 +186,11 @@
       </div>
     </div>
 
-    <!-- Bottom Nav Bar with LARGER TRIANGLE ICON (text-2xl) -->
+    <!-- Bottom Nav Bar -->
     <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/95 backdrop-blur-md border-t border-gray-800 flex justify-around items-center py-2.5 text-xl text-gray-400 z-40">
       <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition p-2"><i class="fas fa-home"></i></button>
       <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition p-2"><i class="fas fa-search"></i></button>
       
-      <!-- LARGER SYMMETRICAL TRIANGLE ICON -->
       <button onclick="openTringoModal()" title="Tringo AI Dashboard" class="hover:text-sky-400 transition p-2 text-2xl text-sky-400 font-extrabold leading-none">
         ▲
       </button>
@@ -205,5 +203,4 @@
 
   <script src="app.js"></script>
 </body>
-  </html>
-  
+</html>
