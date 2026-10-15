@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Auto-hide Comments Engine (app.js) */
+/* PK Twitter Pro - Auto-hide Comments & Modern Card Posts Layout Engine (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -135,7 +135,7 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Create New Post Engine
+// Create New Post Engine (With Unique Modern Card Design)
 function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -143,7 +143,9 @@ function createNewModalPost() {
   const pid = postCounter++;
   const timeline = document.getElementById('timeline');
   const article = document.createElement('article');
-  article.className = 'p-4 hover:bg-gray-950/40 transition post-item';
+  
+  // Har post ko ek bilkul alag floating modern card style diya hai
+  article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg hover:shadow-sky-500/10 post-item';
   article.id = 'post-' + pid;
 
   let mediaHtml = '';
@@ -157,7 +159,7 @@ function createNewModalPost() {
 
   article.innerHTML = `
     <div class="flex gap-3">
-      <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black">M</div>
+      <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">M</div>
       <div class="w-full">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
@@ -166,20 +168,20 @@ function createNewModalPost() {
             <span class="text-gray-500 text-sm">· Just now</span>
           </div>
         </div>
-        <p class="text-white mt-1 text-sm leading-relaxed">${escapeHTML(textVal)}</p>
+        <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(textVal)}</p>
         ${mediaHtml}
-        <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
-          <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
-          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
-          <button onclick="toggleLike(this, '${pid}')" id="likeBtn-${pid}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
-          <button onclick="toggleBookmark(this, '${pid}')" id="bmBtn-${pid}" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
-          <button onclick="sharePost('${pid}')" class="hover:text-sky-400 text-gray-500"><i class="far fa-share-square"></i></button>
+        <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
+          <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
+          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
+          <button onclick="toggleLike(this, '${pid}')" id="likeBtn-${pid}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
+          <button onclick="toggleBookmark(this, '${pid}')" id="bmBtn-${pid}" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
+          <button onclick="sharePost('${pid}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
         </div>
 
         <div id="commentSection-${pid}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
-            <input type="text" id="cm-input-${pid}" placeholder="Write a reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-            <button onclick="addComment('${pid}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full">Reply</button>
+            <input type="text" id="cm-input-${pid}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+            <button onclick="addComment('${pid}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
           </div>
           <div id="cm-list-${pid}" class="space-y-1.5 text-xs text-gray-300"></div>
         </div>
@@ -377,5 +379,4 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
-    
+  }
