@@ -1,4 +1,4 @@
-/* PK Twitter Pro - TikTok Style Follow & Outline Tringo Engine (app.js) */
+/* PK Twitter Pro - Fixed Toggle Logic & Engine (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -213,7 +213,7 @@ function triggerTringoAIResponse(postId, userText) {
 
     const aiDiv = document.createElement('div');
     aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1';
-    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="far fa-caret-square-up mr-1"></i> Tringo AI:</strong> ${aiReply}`;
+    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-caret-up mr-1"></i> Tringo AI:</strong> ${aiReply}`;
     
     list.appendChild(aiDiv);
     cntEl.innerText = parseInt(cntEl.innerText) + 1;
@@ -227,24 +227,54 @@ function triggerTringoAIResponse(postId, userText) {
   });
 }
 
-// TikTok Style Follow Button Toggle (Solid Blue -> Outline Chota Button)
+// TikTok Style Follow Button Toggle
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
   
   if (btn.innerText === 'Follow') {
     btn.innerText = 'Following';
-    // Switch to TikTok style outline following state
     btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1 rounded-full hover:bg-gray-800 transition';
     followingCount++; 
     notificationsData.unshift({ id: Date.now(), type: 'follow', text: 'You followed a user.', time: 'Just now' });
   } else {
     btn.innerText = 'Follow';
-    // Switch back to solid blue follow state
     btn.className = 'text-xs bg-sky-500 text-black font-bold px-4 py-1.5 rounded-full transition hover:bg-sky-400';
     followingCount--; 
   }
 
   if (followingEl) followingEl.innerText = followingCount;
+}
+
+// FIXED LIKE TOGGLE (Properly resets color and count on unlike)
+function toggleLike(btn, pid) {
+  const icon = btn.querySelector('i');
+  const cnt = btn.querySelector('.like-cnt');
+  let val = parseInt(cnt.innerText);
+
+  if (icon.classList.contains('far')) {
+    icon.classList.replace('far', 'fas');
+    btn.classList.add('text-pink-500');
+    cnt.innerText = val + 1;
+  } else {
+    icon.classList.replace('fas', 'far');
+    btn.classList.remove('text-pink-500');
+    cnt.innerText = val - 1;
+  }
+}
+
+// FIXED RETWEET TOGGLE (Properly resets color and count on un-retweet)
+function toggleRetweet(btn) {
+  const icon = btn.querySelector('i');
+  const cnt = btn.querySelector('.rt-cnt');
+  let val = parseInt(cnt.innerText);
+
+  if (!btn.classList.contains('text-green-500')) {
+    btn.classList.add('text-green-500');
+    cnt.innerText = val + 1;
+  } else {
+    btn.classList.remove('text-green-500');
+    cnt.innerText = val - 1;
+  }
 }
 
 function toggleBookmark(btn, pid) {
@@ -285,28 +315,6 @@ function renderSavedBookmarks() {
   });
 }
 
-function toggleLike(btn, pid) {
-  const icon = btn.querySelector('i');
-  const cnt = btn.querySelector('.like-cnt');
-  let val = parseInt(cnt.innerText);
-
-  if (icon.classList.contains('far')) {
-    icon.classList.replace('far', 'fas'); btn.classList.add('text-pink-500'); cnt.innerText = val + 1;
-  } else {
-    icon.classList.replace('fas', 'far'); btn.classList.remove('text-pink-500'); cnt.innerText = val - 1;
-  }
-}
-
-function toggleRetweet(btn) {
-  const cnt = btn.querySelector('.rt-cnt');
-  let val = parseInt(cnt.innerText);
-  if (btn.classList.contains('text-green-500')) {
-    btn.classList.remove('text-green-500'); cnt.innerText = val - 1;
-  } else {
-    btn.classList.add('text-green-500'); cnt.innerText = val + 1;
-  }
-}
-
 function toggleCommentBox(id) {
   const section = document.getElementById('commentSection-' + id);
   if (section) section.classList.toggle('hidden');
@@ -337,7 +345,7 @@ function renderNotifications() {
   notificationsData.forEach(n => {
     let iconClass = 'fas fa-heart text-pink-500 text-lg';
     if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'far fa-caret-square-up text-sky-400 text-lg';
+    if (n.type === 'comment') iconClass = 'fas fa-caret-up text-sky-400 text-lg';
 
     htmlContent += `
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -361,5 +369,4 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-  
+        }
