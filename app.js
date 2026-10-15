@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Fixed Toggle Logic & Engine (app.js) */
+/* PK Twitter Pro - Instant Toggle Color Reset Engine (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -169,11 +169,11 @@ function createNewModalPost() {
         <p class="text-white mt-1 text-sm leading-relaxed">${escapeHTML(textVal)}</p>
         ${mediaHtml}
         <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
-          <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
-          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
-          <button onclick="toggleLike(this, '${pid}')" class="hover:text-pink-500 flex items-center gap-2"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
-          <button onclick="toggleBookmark(this, '${pid}')" class="hover:text-sky-400"><i class="far fa-bookmark"></i></button>
-          <button onclick="sharePost('${pid}')" class="hover:text-sky-400"><i class="far fa-share-square"></i></button>
+          <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
+          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
+          <button onclick="toggleLike(this, '${pid}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
+          <button onclick="toggleBookmark(this, '${pid}')" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
+          <button onclick="sharePost('${pid}')" class="hover:text-sky-400 text-gray-500"><i class="far fa-share-square"></i></button>
         </div>
 
         <div id="commentSection-${pid}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
@@ -213,7 +213,7 @@ function triggerTringoAIResponse(postId, userText) {
 
     const aiDiv = document.createElement('div');
     aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1';
-    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-caret-up mr-1"></i> Tringo AI:</strong> ${aiReply}`;
+    aiDiv.innerHTML = `<strong class="text-sky-400"><span class="mr-1">▲</span> Tringo AI:</strong> ${aiReply}`;
     
     list.appendChild(aiDiv);
     cntEl.innerText = parseInt(cntEl.innerText) + 1;
@@ -245,7 +245,7 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// FIXED LIKE TOGGLE (Properly resets color and count on unlike)
+// EXACT LIKE & UNLIKE TOGGLE (Instant Color & Count Reset)
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -262,9 +262,8 @@ function toggleLike(btn, pid) {
   }
 }
 
-// FIXED RETWEET TOGGLE (Properly resets color and count on un-retweet)
+// EXACT RETWEET TOGGLE
 function toggleRetweet(btn) {
-  const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.rt-cnt');
   let val = parseInt(cnt.innerText);
 
@@ -277,6 +276,7 @@ function toggleRetweet(btn) {
   }
 }
 
+// EXACT BOOKMARK & UN-BOOKMARK TOGGLE (Instant Color Reset)
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -288,12 +288,10 @@ function toggleBookmark(btn, pid) {
     if (!savedPostsData.some(p => p.id === pid)) {
       savedPostsData.push({ id: pid, html: postElement.innerHTML });
     }
-    alert('Saved to Profile Bookmarks!');
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-sky-400');
     savedPostsData = savedPostsData.filter(p => p.id !== pid);
-    alert('Removed from Bookmarks.');
   }
 }
 
@@ -345,12 +343,14 @@ function renderNotifications() {
   notificationsData.forEach(n => {
     let iconClass = 'fas fa-heart text-pink-500 text-lg';
     if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'fas fa-caret-up text-sky-400 text-lg';
+    if (n.type === 'comment') iconClass = 'text-sky-400 text-lg font-bold';
+
+    let iconSymbol = n.type === 'comment' ? '▲' : `<i class="${iconClass}"></i>`;
 
     htmlContent += `
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <i class="${iconClass}"></i>
+          <span class="w-5 text-center">${iconSymbol}</span>
           <p class="text-gray-200">${escapeHTML(n.text)}</p>
         </div>
         <span class="text-xs text-gray-500">${n.time}</span>
@@ -369,4 +369,5 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
+    }
+    
