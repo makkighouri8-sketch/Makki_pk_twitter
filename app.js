@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Real Retweet Toggle Logic (app.js) */
+/* PK Twitter Pro - Auto-hide Comments Engine (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -245,7 +245,7 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// LIKE & UNLIKE TOGGLE (Pink)
+// LIKE & UNLIKE TOGGLE
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -262,7 +262,7 @@ function toggleLike(btn, pid) {
   }
 }
 
-// REAL RETWEET / REPOST TOGGLE (Ek baar click par +1 aur color green, dobara click par wapas -1 aur color default)
+// RETWEET TOGGLE
 function toggleRetweet(btn) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = parseInt(cnt.innerText);
@@ -276,7 +276,7 @@ function toggleRetweet(btn) {
   }
 }
 
-// BOOKMARK & UN-BOOKMARK TOGGLE (Sky Blue)
+// BOOKMARK TOGGLE
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -313,17 +313,20 @@ function renderSavedBookmarks() {
   });
 }
 
+// TOGGLE COMMENT SECTION VISIBILITY
 function toggleCommentBox(id) {
   const section = document.getElementById('commentSection-' + id);
   if (section) section.classList.toggle('hidden');
 }
 
+// ADD COMMENT AND AUTO-HIDE SECTION
 function addComment(id) {
   const input = document.getElementById('cm-input-' + id);
   if (!input.value.trim()) return;
 
   const list = document.getElementById('cm-list-' + id);
   const cntEl = document.getElementById('cm-cnt-' + id);
+  const section = document.getElementById('commentSection-' + id);
 
   const div = document.createElement('div');
   div.className = 'bg-gray-900/40 p-2 rounded-xl';
@@ -332,6 +335,11 @@ function addComment(id) {
   list.appendChild(div);
   cntEl.innerText = parseInt(cntEl.innerText) + 1;
   input.value = '';
+
+  // Auto-hide comment section after posting so it stays clean like Twitter!
+  if (section) {
+    section.classList.add('hidden');
+  }
 }
 
 function renderNotifications() {
@@ -369,4 +377,5 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+      }
+    
