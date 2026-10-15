@@ -1,4 +1,4 @@
-/* PK Twitter Pro with Integrated Tringo AI (Grok Style Engine) */
+/* PK Twitter Pro - Tringo AI Floating Engine (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -11,7 +11,7 @@ let notificationsData = [
   { id: 2, type: 'like', text: 'Tringo AI liked your recent tweet.', time: '5m ago' }
 ];
 
-// Navigation System
+// Navigation
 function switchPage(pageID) {
   ['feed', 'explore', 'notif', 'profile'].forEach(p => {
     const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
@@ -40,7 +40,7 @@ function switchPage(pageID) {
   window.scrollTo(0, 0);
 }
 
-// Profile Tabs Switcher
+// Profile Tabs
 function switchProfileTab(tab) {
   const postsCont = document.getElementById('profPostsContainer');
   const savedCont = document.getElementById('profSavedContainer');
@@ -61,7 +61,46 @@ function switchProfileTab(tab) {
   }
 }
 
-// Modal Controllers
+// Tringo AI Dashboard Modal Handlers
+function openTringoModal() {
+  document.getElementById('tringoModal').classList.remove('hidden');
+}
+
+function closeTringoModal() {
+  document.getElementById('tringoModal').classList.add('hidden');
+}
+
+function askTringoAI() {
+  const input = document.getElementById('tringoPromptInput');
+  const chatBox = document.getElementById('tringoChatBox');
+  if (!input.value.trim()) return;
+
+  const userMsg = input.value;
+  const uDiv = document.createElement('div');
+  uDiv.className = 'bg-gray-800 p-2.5 rounded-xl text-right text-gray-200 border border-gray-700';
+  uDiv.innerHTML = `<strong>You:</strong> ${escapeHTML(userMsg)}`;
+  chatBox.appendChild(uDiv);
+
+  input.value = '';
+
+  setTimeout(() => {
+    let response = "Tringo AI: Request processed successfully for Multan dev server!";
+    const lower = userMsg.toLowerCase();
+    if (lower.includes('post') || lower.includes('tweet')) {
+      response = "Tringo AI: Click the floating (+) button on bottom-right to publish instantly!";
+    } else if (lower.includes('hi') || lower.includes('hello')) {
+      response = "Tringo AI: Welcome Makki! System is fully operational.";
+    }
+
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'bg-sky-950/60 p-2.5 rounded-xl border border-sky-800 text-sky-300';
+    aiDiv.innerHTML = `<strong>Tringo AI:</strong> ${response}`;
+    chatBox.appendChild(aiDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }, 800);
+}
+
+// Post Modal Handlers
 function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
 function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
@@ -96,7 +135,7 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Publish Post + Tringo AI Grok-style Interaction Trigger
+// Post Creation Engine
 function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -139,7 +178,7 @@ function createNewModalPost() {
 
         <div id="commentSection-${pid}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
-            <input type="text" id="cm-input-${pid}" placeholder="Ask Tringo AI or reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+            <input type="text" id="cm-input-${pid}" placeholder="Write a reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
             <button onclick="addComment('${pid}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full">Reply</button>
           </div>
           <div id="cm-list-${pid}" class="space-y-1.5 text-xs text-gray-300"></div>
@@ -154,53 +193,41 @@ function createNewModalPost() {
   closePostModal();
   switchPage('feed');
 
-  // Trigger Tringo AI (Grok Style Response)
   setTimeout(() => {
     triggerTringoAIResponse(pid, textVal);
   }, 1200);
 }
 
-// Tringo AI Engine (Grok Style)
+// Tringo AI Auto Reply Algorithm
 function triggerTringoAIResponse(postId, userText) {
   const list = document.getElementById('cm-list-' + postId);
   const cntEl = document.getElementById('cm-cnt-' + postId);
   const followersEl = document.getElementById('profileFollowersCount');
 
   if (list && cntEl) {
-    let aiReply = "Tringo AI analyzing: Wah Makki bhai, kya behtareen update hai! ⚡🤖";
+    let aiReply = "Tringo AI: Wah Makki bhai,zabardast post! ⚡🤖";
     const lower = userText.toLowerCase();
     
     if (lower.includes('pakistan') || lower.includes('multan')) {
-      aiReply = "Tringo AI Intel: Multan ka tech scene tezi se grow kar raha hai! 🇵🇰🚀";
-    } else if (lower.includes('code') || lower.includes('vercel') || lower.includes('ai')) {
-      aiReply = "Tringo AI Intel: Code structure 100% optimized aur Vercel cloud par fully secure hai! 💡🔥";
-    } else if (lower.includes('hello') || lower.includes('hi')) {
-      aiReply = "Hello Makki! Main aapka apna Tringo AI hoon, bataiye kya analyze karun?";
+      aiReply = "Tringo AI: Multan Tech ecosystem represents! 🇵🇰🚀";
     }
 
     const aiDiv = document.createElement('div');
-    aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1 shadow-md';
-    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-brain mr-1"></i> Tringo AI (Grok):</strong> ${aiReply}`;
+    aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1';
+    aiDiv.innerHTML = `<strong class="text-sky-400"><i class="fas fa-play mr-1 transform rotate-[-90deg]"></i> Tringo AI:</strong> ${aiReply}`;
     
     list.appendChild(aiDiv);
     cntEl.innerText = parseInt(cntEl.innerText) + 1;
   }
 
-  // Organic Follower Growth via Tringo AI Engagement
   followersCount++;
-  if (followersEl) {
-    followersEl.innerText = followersCount;
-  }
+  if (followersEl) followersEl.innerText = followersCount;
 
   notificationsData.unshift({
-    id: Date.now(), type: 'follow', text: 'Tringo AI brought a new organic follower to your profile!', time: 'Just now'
-  });
-  notificationsData.unshift({
-    id: Date.now(), type: 'comment', text: 'Tringo AI analyzed and replied to your post.', time: 'Just now'
+    id: Date.now(), type: 'comment', text: 'Tringo AI replied to your post.', time: 'Just now'
   });
 }
 
-// Following Algorithm
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
   
@@ -208,10 +235,7 @@ function toggleFollow(btn) {
     btn.innerText = 'Following';
     btn.className = 'text-xs bg-sky-500 text-black font-bold px-3 py-1 rounded-full transition';
     followingCount++; 
-
-    notificationsData.unshift({
-      id: Date.now(), type: 'follow', text: 'You started following a new account.', time: 'Just now'
-    });
+    notificationsData.unshift({ id: Date.now(), type: 'follow', text: 'You followed a user.', time: 'Just now' });
   } else {
     btn.innerText = 'Follow';
     btn.className = 'text-xs border border-sky-400 text-sky-400 font-bold px-3 py-1 rounded-full hover:bg-sky-500/10 transition';
@@ -221,7 +245,6 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// Bookmarks Engine
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -230,7 +253,6 @@ function toggleBookmark(btn, pid) {
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-sky-400');
-    
     if (!savedPostsData.some(p => p.id === pid)) {
       savedPostsData.push({ id: pid, html: postElement.innerHTML });
     }
@@ -248,10 +270,7 @@ function renderSavedBookmarks() {
   if (!container) return;
 
   if (savedPostsData.length === 0) {
-    container.innerHTML = `
-      <i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>
-      No saved bookmarks yet. Tap the bookmark icon on any post to save it here!
-    `;
+    container.innerHTML = `<i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.`;
     return;
   }
 
@@ -307,7 +326,6 @@ function addComment(id) {
   input.value = '';
 }
 
-// Render Notifications
 function renderNotifications() {
   const notifContainer = document.getElementById('pageNotif');
   if (!notifContainer) return;
@@ -317,7 +335,7 @@ function renderNotifications() {
   notificationsData.forEach(n => {
     let iconClass = 'fas fa-heart text-pink-500 text-lg';
     if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'fas fa-brain text-sky-400 text-lg';
+    if (n.type === 'comment') iconClass = 'fas fa-play text-sky-400 text-lg transform rotate-[-90deg]';
 
     htmlContent += `
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -341,4 +359,4 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+    }
