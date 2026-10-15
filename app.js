@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Non-Blocking Supabase Engine (app.js) */
+/* PK Twitter Pro - Smart Hybrid Supabase Engine (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
@@ -9,11 +9,12 @@ try {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (e) {
-  console.error('Supabase client error:', e);
+  console.error('Supabase init warning:', e);
 }
 
 let activeMedia = null;
 let mediaKind = null;
+let postCounter = 100;
 let followingCount = 320; 
 let followersCount = 2500;
 let savedPostsData = []; 
@@ -26,23 +27,18 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPostsFromSupabase();
 });
 
-// Load Posts with 3-second Timeout Safety
+// Load Posts from Supabase with Fallback
 async function loadPostsFromSupabase() {
   const timeline = document.getElementById('timeline');
-  if (!timeline || !supabase) return;
+  if (!timeline) return;
 
   try {
-    const fetchPromise = supabase
+    if (!supabase) throw new Error('Supabase not loaded');
+
+    const { data: posts, error } = await supabase
       .from('posts')
       .select('*')
       .order('created_at', { ascending: false });
-
-    // 3 Second Timeout to prevent freeze
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout')), 3000)
-    );
-
-    const { data: posts, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
     if (error) throw error;
 
@@ -53,7 +49,7 @@ async function loadPostsFromSupabase() {
       });
     }
   } catch (err) {
-    console.warn('Database sync skipped/pending:', err.message);
+    console.warn('Using local fallback mode due to:', err.message);
   }
 }
 
@@ -63,7 +59,7 @@ function renderPostElement(post) {
 
   const article = document.createElement('article');
   article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg hover:shadow-sky-500/10 post-item';
-  article.id = 'post-' + post.id;
+  article.id = 'post-' + (post.id || postCounter++);
 
   let mediaHtml = '';
   if (post.media_url) {
@@ -86,19 +82,19 @@ function renderPostElement(post) {
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
         ${mediaHtml}
         <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
-          <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">0</span></button>
-          <button onclick="toggleRetweet(this, '${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets_count || 0}</span></button>
-          <button onclick="toggleLike(this, '${post.id}')" id="likeBtn-${post.id}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes_count || 0}</span></button>
-          <button onclick="toggleBookmark(this, '${post.id}')" id="bmBtn-${post.id}" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
-          <button onclick="sharePost('${post.id}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
+          <button onclick="toggleCommentBox('${post.id || 'local'}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id || 'local'}">0</span></button>
+          <button onclick="toggleRetweet(this, '${post.id || 'local'}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets_count || 0}</span></button>
+          <button onclick="toggleLike(this, '${post.id || 'local'}')" id="likeBtn-${post.id || 'local'}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes_count || 0}</span></button>
+          <button onclick="toggleBookmark(this, '${post.id || 'local'}')" id="bmBtn-${post.id || 'local'}" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
+          <button onclick="sharePost('${post.id || 'local'}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
         </div>
 
-        <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+        <div id="commentSection-${post.id || 'local'}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
-            <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+            <input type="text" id="cm-input-${post.id || 'local'}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+            <button onclick="addComment('${post.id || 'local'}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
           </div>
-          <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
+          <div id="cm-list-${post.id || 'local'}" class="space-y-1.5 text-xs text-gray-300"></div>
         </div>
 
       </div>
@@ -108,32 +104,37 @@ function renderPostElement(post) {
   timeline.appendChild(article);
 }
 
+// Create New Post with Supabase & Local Fallback
 async function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
   if (!textVal.trim() && !activeMedia) return;
 
+  const newPostData = {
+    user_name: 'Makki',
+    user_handle: '@makki',
+    content: textVal,
+    media_url: activeMedia || null,
+    likes_count: 0,
+    retweets_count: 0,
+    created_at: new Date().toISOString()
+  };
+
   try {
     if (supabase) {
-      await supabase.from('posts').insert([
-        {
-          user_name: 'Makki',
-          user_handle: '@makki',
-          content: textVal,
-          media_url: activeMedia || null,
-          likes_count: 0,
-          retweets_count: 0
-        }
-      ]);
+      const { error } = await supabase.from('posts').insert([newPostData]);
+      if (error) throw error;
     }
-
-    if (inputEl) inputEl.value = '';
-    closePostModal();
-    switchPage('feed');
-    loadPostsFromSupabase();
   } catch (err) {
-    console.error('Error in post creation:', err);
+    console.warn('Cloud save skipped, rendering locally:', err.message);
   }
+
+  if (inputEl) inputEl.value = '';
+  closePostModal();
+  switchPage('feed');
+  
+  // Render instantly
+  renderPostElement(newPostData);
 }
 
 function switchPage(pageID) {
@@ -279,7 +280,7 @@ async function toggleLike(btn, pid) {
   }
   cnt.innerText = newCount;
 
-  if (supabase) {
+  if (supabase && pid !== 'local') {
     supabase.from('posts').update({ likes_count: newCount }).eq('id', pid).then();
   }
 }
@@ -298,7 +299,7 @@ async function toggleRetweet(btn, pid) {
   }
   cnt.innerText = newCount;
 
-  if (supabase) {
+  if (supabase && pid !== 'local') {
     supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid).then();
   }
 }
@@ -403,5 +404,5 @@ function formatTime(isoString) {
 
 function escapeHTML(str) {
   return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-  
+      }
+        
