@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Ultimate Premium Stylesheet */
+/* PK Twitter Pro - Ultimate Clean Stylesheet */
 body {
   background-color: #000000;
   color: #ffffff;
@@ -79,6 +79,17 @@ header, nav {
 ::selection {
   background: #0ea5e9;
   color: #000000;
+}
+
+/* Prevent accidental browser focus color changes on post action buttons */
+article button {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+article button:focus {
+  outline: none !important;
+  color: inherit;
 }
 
 /* Smooth Interactive Elements */
