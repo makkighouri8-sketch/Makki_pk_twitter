@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Clean Button Toggles (app.js) */
+/* PK Twitter Pro - Clean Button Toggles & Fixed Retweet Color (app.js) */
 
 let activeMedia = null;
 let mediaKind = null;
@@ -245,7 +245,7 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// ONLY LIKE BUTTON GETS COLOR CHANGE (Pink)
+// ONLY LIKE BUTTON COLOR TOGGLE
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -262,14 +262,15 @@ function toggleLike(btn, pid) {
   }
 }
 
-// RETWEET (Bas count barhega, koi permanent color change nahi)
+// RETWEET (Bas count barhega, koi color change nahi hoga!)
 function toggleRetweet(btn) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = parseInt(cnt.innerText);
   cnt.innerText = val + 1;
+  // Note: No color classes added or toggled here, keeping color strictly default!
 }
 
-// ONLY BOOKMARK / SAVE BUTTON GETS COLOR CHANGE (Sky Blue)
+// ONLY BOOKMARK / SAVE BUTTON COLOR TOGGLE
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -362,5 +363,4 @@ function sharePost(id) {
 
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-      
+      }
