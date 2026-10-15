@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Main Stylesheet */
+/* PK Twitter Pro - Ultimate Premium Stylesheet */
 body {
   background-color: #000000;
   color: #ffffff;
@@ -6,8 +6,10 @@ body {
   user-select: none;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
 }
@@ -21,10 +23,74 @@ body {
   border-radius: 4px;
 }
 
+::-webkit-scrollbar-thumb:hover {
+  background: #333333;
+}
+
+/* Page Transitions & Animations */
 .page-view {
   display: block;
+  animation: fadeIn 0.25s ease-in-out;
 }
 
 .page-view.hidden {
   display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glassmorphism Header & Navigation */
+header, nav {
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  background-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Modals Glass Glow & Pop Animation */
+#tringoModal > div, #postModal > div {
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.15);
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Custom Selection Highlight Color */
+::selection {
+  background: #0ea5e9;
+  color: #000000;
+}
+
+/* Smooth Interactive Elements */
+button {
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+article {
+  transition: background-color 0.2s ease;
 }
