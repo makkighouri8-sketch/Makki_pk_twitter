@@ -1,8 +1,13 @@
-/* PK Twitter Pro - Auto-hide Comments & Modern Card Posts Layout Engine (app.js) */
+/* PK Twitter Pro - Supabase Real-time Integrated Engine (app.js) */
+
+// Supabase Configuration
+const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
+const SUPABASE_ANON_KEY = 'https://nfiplfastxflhmqblcvj.supabase.co/rest/v1/'; 
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let activeMedia = null;
 let mediaKind = null;
-let postCounter = 2;
 let followingCount = 320; 
 let followersCount = 2500;
 let savedPostsData = []; 
@@ -10,6 +15,129 @@ let notificationsData = [
   { id: 1, type: 'follow', text: 'Tringo AI started following your profile.', time: '1m ago' },
   { id: 2, type: 'like', text: 'Tringo AI liked your recent tweet.', time: '5m ago' }
 ];
+
+// App Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  loadPostsFromSupabase();
+});
+
+// Load Posts from Supabase Database
+async function loadPostsFromSupabase() {
+  const timeline = document.getElementById('timeline');
+  if (!timeline) return;
+
+  try {
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    timeline.innerHTML = '';
+    if (!posts || posts.length === 0) {
+      timeline.innerHTML = `<div class="text-center text-gray-500 py-10">Abhi koi post nahi hai. Pehli post share karein!</div>`;
+      return;
+    }
+
+    posts.forEach(post => {
+      renderPostElement(post);
+    });
+  } catch (err) {
+    console.error('Error loading posts:', err.message);
+  }
+}
+
+// Render Individual Post Card
+function renderPostElement(post) {
+  const timeline = document.getElementById('timeline');
+  if (!timeline) return;
+
+  const article = document.createElement('article');
+  article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg hover:shadow-sky-500/10 post-item';
+  article.id = 'post-' + post.id;
+
+  let mediaHtml = '';
+  if (post.media_url) {
+    mediaHtml = `<img src="${post.media_url}" class="w-full max-h-80 object-cover rounded-2xl mt-3 border border-gray-800"/>`;
+  }
+
+  article.innerHTML = `
+    <div class="flex gap-3">
+      <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
+        ${post.user_name ? post.user_name[0] : 'M'}
+      </div>
+      <div class="w-full">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white">${post.user_name || 'Makki'}</span>
+            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+            <span class="text-gray-500 text-sm">· ${formatTime(post.created_at)}</span>
+          </div>
+        </div>
+        <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
+        ${mediaHtml}
+        <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
+          <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">0</span></button>
+          <button onclick="toggleRetweet(this, '${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets_count || 0}</span></button>
+          <button onclick="toggleLike(this, '${post.id}')" id="likeBtn-${post.id}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes_count || 0}</span></button>
+          <button onclick="toggleBookmark(this, '${post.id}')" id="bmBtn-${post.id}" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
+          <button onclick="sharePost('${post.id}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
+        </div>
+
+        <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+          </div>
+          <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  timeline.appendChild(article);
+}
+
+// Create New Post in Supabase
+async function createNewModalPost() {
+  const textVal = document.getElementById('modalPostInput').value;
+  if (!textVal.trim() && !activeMedia) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([
+        {
+          user_name: 'Makki',
+          user_handle: '@makki',
+          content: textVal,
+          media_url: activeMedia || null,
+          likes_count: 0,
+          retweets_count: 0
+        }
+      ])
+      .select();
+
+    if (error) throw error;
+
+    document.getElementById('modalPostInput').value = '';
+    closePostModal();
+    switchPage('feed');
+
+    await loadPostsFromSupabase();
+
+    if (data && data[0]) {
+      setTimeout(() => {
+        triggerTringoAIResponse(data[0].id, textVal);
+      }, 1200);
+    }
+  } catch (err) {
+    console.error('Error saving post:', err.message);
+    alert('Post database mein save nahi ho saki: ' + err.message);
+  }
+}
 
 // Navigation
 function switchPage(pageID) {
@@ -61,14 +189,9 @@ function switchProfileTab(tab) {
   }
 }
 
-// Tringo AI Dashboard Modal Handlers
-function openTringoModal() {
-  document.getElementById('tringoModal').classList.remove('hidden');
-}
-
-function closeTringoModal() {
-  document.getElementById('tringoModal').classList.add('hidden');
-}
+// Tringo AI Modal
+function openTringoModal() { document.getElementById('tringoModal').classList.remove('hidden'); }
+function closeTringoModal() { document.getElementById('tringoModal').classList.add('hidden'); }
 
 function askTringoAI() {
   const input = document.getElementById('tringoPromptInput');
@@ -100,7 +223,7 @@ function askTringoAI() {
   }, 700);
 }
 
-// Post Modal Handlers
+// Modal Media Handlers
 function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
 function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
@@ -135,248 +258,11 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Create New Post Engine (With Unique Modern Card Design)
-function createNewModalPost() {
-  const textVal = document.getElementById('modalPostInput').value;
-  if (!textVal.trim() && !activeMedia) return;
-
-  const pid = postCounter++;
-  const timeline = document.getElementById('timeline');
-  const article = document.createElement('article');
-  
-  // Har post ko ek bilkul alag floating modern card style diya hai
-  article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg hover:shadow-sky-500/10 post-item';
-  article.id = 'post-' + pid;
-
-  let mediaHtml = '';
-  if (activeMedia) {
-    if (mediaKind === 'img') {
-      mediaHtml = `<img src="${activeMedia}" class="w-full max-h-80 object-cover rounded-2xl mt-3 border border-gray-800"/>`;
-    } else if (mediaKind === 'vid') {
-      mediaHtml = `<video src="${activeMedia}" controls class="w-full max-h-80 rounded-2xl mt-3 border border-gray-800"></video>`;
-    }
-  }
-
-  article.innerHTML = `
-    <div class="flex gap-3">
-      <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">M</div>
-      <div class="w-full">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-white">Makki</span>
-            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
-            <span class="text-gray-500 text-sm">· Just now</span>
-          </div>
-        </div>
-        <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(textVal)}</p>
-        ${mediaHtml}
-        <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
-          <button onclick="toggleCommentBox('${pid}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${pid}">0</span></button>
-          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">0</span></button>
-          <button onclick="toggleLike(this, '${pid}')" id="likeBtn-${pid}" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">0</span></button>
-          <button onclick="toggleBookmark(this, '${pid}')" id="bmBtn-${pid}" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
-          <button onclick="sharePost('${pid}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
-        </div>
-
-        <div id="commentSection-${pid}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
-          <div class="flex gap-2 mb-2">
-            <input type="text" id="cm-input-${pid}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-            <button onclick="addComment('${pid}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
-          </div>
-          <div id="cm-list-${pid}" class="space-y-1.5 text-xs text-gray-300"></div>
-        </div>
-
-      </div>
-    </div>
-  `;
-
-  timeline.prepend(article);
-  document.getElementById('modalPostInput').value = '';
-  closePostModal();
-  switchPage('feed');
-
-  setTimeout(() => {
-    triggerTringoAIResponse(pid, textVal);
-  }, 1200);
-}
-
 function triggerTringoAIResponse(postId, userText) {
   const list = document.getElementById('cm-list-' + postId);
   const cntEl = document.getElementById('cm-cnt-' + postId);
   const followersEl = document.getElementById('profileFollowersCount');
 
   if (list && cntEl) {
-    let aiReply = "Tringo AI: Wah Makki bhai, zabardast post! ⚡🤖";
-    const lower = userText.toLowerCase();
-    
-    if (lower.includes('pakistan') || lower.includes('multan')) {
-      aiReply = "Tringo AI: Multan Tech ecosystem represents! 🇵🇰🚀";
-    }
-
-    const aiDiv = document.createElement('div');
-    aiDiv.className = 'bg-sky-950/40 border border-sky-800/50 p-2.5 rounded-xl mt-1';
-    aiDiv.innerHTML = `<strong class="text-sky-400"><span class="mr-1">▲</span> Tringo AI:</strong> ${aiReply}`;
-    
-    list.appendChild(aiDiv);
-    cntEl.innerText = parseInt(cntEl.innerText) + 1;
-  }
-
-  followersCount++;
-  if (followersEl) followersEl.innerText = followersCount;
-
-  notificationsData.unshift({
-    id: Date.now(), type: 'comment', text: 'Tringo AI replied to your post.', time: 'Just now'
-  });
-}
-
-// TikTok Style Follow Button Toggle
-function toggleFollow(btn) {
-  const followingEl = document.getElementById('profileFollowingCount');
-  
-  if (btn.innerText === 'Follow') {
-    btn.innerText = 'Following';
-    btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1 rounded-full hover:bg-gray-800 transition';
-    followingCount++; 
-    notificationsData.unshift({ id: Date.now(), type: 'follow', text: 'You followed a user.', time: 'Just now' });
-  } else {
-    btn.innerText = 'Follow';
-    btn.className = 'text-xs bg-sky-500 text-black font-bold px-4 py-1.5 rounded-full transition hover:bg-sky-400';
-    followingCount--; 
-  }
-
-  if (followingEl) followingEl.innerText = followingCount;
-}
-
-// LIKE & UNLIKE TOGGLE
-function toggleLike(btn, pid) {
-  const icon = btn.querySelector('i');
-  const cnt = btn.querySelector('.like-cnt');
-  let val = parseInt(cnt.innerText);
-
-  if (icon.classList.contains('far')) {
-    icon.classList.replace('far', 'fas');
-    btn.classList.add('text-pink-500');
-    cnt.innerText = val + 1;
-  } else {
-    icon.classList.replace('fas', 'far');
-    btn.classList.remove('text-pink-500');
-    cnt.innerText = val - 1;
-  }
-}
-
-// RETWEET TOGGLE
-function toggleRetweet(btn) {
-  const cnt = btn.querySelector('.rt-cnt');
-  let val = parseInt(cnt.innerText);
-
-  if (!btn.classList.contains('text-green-500')) {
-    btn.classList.add('text-green-500');
-    cnt.innerText = val + 1;
-  } else {
-    btn.classList.remove('text-green-500');
-    cnt.innerText = val - 1;
-  }
-}
-
-// BOOKMARK TOGGLE
-function toggleBookmark(btn, pid) {
-  const icon = btn.querySelector('i');
-  const postElement = document.getElementById('post-' + pid);
-  if (!postElement) return;
-
-  if (icon.classList.contains('far')) {
-    icon.classList.replace('far', 'fas');
-    btn.classList.add('text-sky-400');
-    if (!savedPostsData.some(p => p.id === pid)) {
-      savedPostsData.push({ id: pid, html: postElement.innerHTML });
-    }
-  } else {
-    icon.classList.replace('fas', 'far');
-    btn.classList.remove('text-sky-400');
-    savedPostsData = savedPostsData.filter(p => p.id !== pid);
-  }
-}
-
-function renderSavedBookmarks() {
-  const container = document.getElementById('bookmarkList');
-  if (!container) return;
-
-  if (savedPostsData.length === 0) {
-    container.innerHTML = `<i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.`;
-    return;
-  }
-
-  container.innerHTML = '';
-  savedPostsData.forEach(item => {
-    const wrap = document.createElement('div');
-    wrap.className = 'bg-gray-900/40 border border-gray-800 rounded-2xl p-3 text-left mb-3';
-    wrap.innerHTML = item.html;
-    container.appendChild(wrap);
-  });
-}
-
-// TOGGLE COMMENT SECTION VISIBILITY
-function toggleCommentBox(id) {
-  const section = document.getElementById('commentSection-' + id);
-  if (section) section.classList.toggle('hidden');
-}
-
-// ADD COMMENT AND AUTO-HIDE SECTION
-function addComment(id) {
-  const input = document.getElementById('cm-input-' + id);
-  if (!input.value.trim()) return;
-
-  const list = document.getElementById('cm-list-' + id);
-  const cntEl = document.getElementById('cm-cnt-' + id);
-  const section = document.getElementById('commentSection-' + id);
-
-  const div = document.createElement('div');
-  div.className = 'bg-gray-900/40 p-2 rounded-xl';
-  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
-
-  list.appendChild(div);
-  cntEl.innerText = parseInt(cntEl.innerText) + 1;
-  input.value = '';
-
-  // Auto-hide comment section after posting so it stays clean like Twitter!
-  if (section) {
-    section.classList.add('hidden');
-  }
-}
-
-function renderNotifications() {
-  const notifContainer = document.getElementById('pageNotif');
-  if (!notifContainer) return;
-
-  let htmlContent = `<h2 class="font-extrabold text-xl mb-4">Activity Notifications</h2><div class="space-y-4 text-sm">`;
-  
-  notificationsData.forEach(n => {
-    let iconClass = 'fas fa-heart text-pink-500 text-lg';
-    if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'text-sky-400 text-lg font-bold';
-
-    let iconSymbol = n.type === 'comment' ? '▲' : `<i class="${iconClass}"></i>`;
-
-    htmlContent += `
-      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
-        <div class="flex items-center gap-3">
-          <span class="w-5 text-center">${iconSymbol}</span>
-          <p class="text-gray-200">${escapeHTML(n.text)}</p>
-        </div>
-        <span class="text-xs text-gray-500">${n.time}</span>
-      </div>
-    `;
-  });
-
-  htmlContent += `</div>`;
-  notifContainer.innerHTML = htmlContent;
-}
-
-function sharePost(id) {
-  navigator.clipboard.writeText(window.location.href);
-  alert('Post link copied to clipboard!');
-}
-
-function escapeHTML(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
+    let aiReply = "Tringo
+            
