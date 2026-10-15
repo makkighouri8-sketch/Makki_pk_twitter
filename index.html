@@ -39,10 +39,10 @@
                     <i class="fas fa-check-circle text-sky-400 text-xs"></i>
                     <span class="text-gray-500 text-sm">· 5m</span>
                   </div>
-                  <!-- TikTok Style Follow Button (Initially Solid Blue) -->
+                  <!-- TikTok Style Follow Button -->
                   <button onclick="toggleFollow(this)" id="followBtn-1" class="text-xs bg-sky-500 text-black font-bold px-4 py-1.5 rounded-full transition hover:bg-sky-400">Follow</button>
                 </div>
-                <p class="text-white mt-2 text-sm leading-relaxed">Welcome to PK Twitter! Check out the outline Tringo AI icon at the bottom, and follow/unfollow buttons styled like TikTok! 🇵🇰✨</p>
+                <p class="text-white mt-2 text-sm leading-relaxed">Welcome to PK Twitter! Check out the clean triangle icon at the bottom for Tringo AI, and interactive like/retweet toggles! 🇵🇰✨</p>
                 
                 <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-4">
                   <button onclick="toggleCommentBox('1')" class="hover:text-sky-400 flex items-center gap-2"><i class="far fa-comment"></i> <span id="cm-cnt-1">0</span></button>
@@ -81,15 +81,13 @@
               <p class="font-bold text-sm text-sky-400">#TringoAI</p>
               <p class="text-xs text-gray-400 mt-0.5">38.2K Posts</p>
             </div>
-            <i class="far fa-caret-square-up text-sky-400 text-xl"></i>
+            <i class="fas fa-caret-up text-sky-400 text-xl"></i>
           </div>
         </div>
       </section>
 
       <!-- NOTIFICATIONS PAGE -->
-      <section id="pageNotif" class="page-view hidden p-4">
-        <!-- Rendered dynamically via JS -->
-      </section>
+      <section id="pageNotif" class="page-view hidden p-4"></section>
 
       <!-- PROFILE PAGE -->
       <section id="pageProfile" class="page-view hidden">
@@ -110,15 +108,12 @@
           </div>
         </div>
 
-        <!-- Profile Tabs -->
         <div class="flex border-b border-gray-800 text-sm font-bold text-center">
           <button onclick="switchProfileTab('myPosts')" id="pTabPosts" class="flex-1 py-3 border-b-2 border-sky-400 text-sky-400">Posts</button>
           <button onclick="switchProfileTab('mySaved')" id="pTabSaved" class="flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white"><i class="far fa-bookmark mr-1"></i> Saved</button>
         </div>
 
-        <div id="profPostsContainer" class="p-6 text-center text-gray-500 text-sm">
-          Your created posts will appear here.
-        </div>
+        <div id="profPostsContainer" class="p-6 text-center text-gray-500 text-sm">Your created posts will appear here.</div>
 
         <div id="profSavedContainer" class="p-4 hidden">
           <div id="bookmarkList" class="space-y-3 text-sm text-gray-500 text-center py-6">
@@ -135,12 +130,12 @@
       <i class="fas fa-plus text-2xl"></i>
     </button>
 
-    <!-- TRINGO AI DASHBOARD MODAL (Centered & Clean) -->
+    <!-- TRINGO AI DASHBOARD MODAL -->
     <div id="tringoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
       <div class="bg-gray-950 border border-gray-800 w-full max-w-md rounded-2xl p-4 shadow-2xl relative">
         <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-3">
           <div class="flex items-center gap-2">
-            <i class="far fa-caret-square-up text-sky-400 text-lg"></i>
+            <i class="fas fa-caret-up text-sky-400 text-lg"></i>
             <h3 class="font-extrabold text-base text-white">Tringo AI Dashboard</h3>
           </div>
           <button onclick="closeTringoModal()" class="text-gray-400 hover:text-white text-base"><i class="fas fa-times"></i></button>
@@ -162,7 +157,7 @@
       </div>
     </div>
 
-    <!-- TIKTOK STYLE POST MODAL -->
+    <!-- POST MODAL -->
     <div id="postModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
       <div class="bg-gray-950 border border-gray-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl">
         <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
@@ -191,14 +186,14 @@
       </div>
     </div>
 
-    <!-- Bottom Nav Bar with OUTLINE TRINGO ICON (Clean, no solid background box) -->
+    <!-- Bottom Nav Bar with SIMPLE OUTLINE TRIANGLE ICON FOR TRINGO AI -->
     <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/95 backdrop-blur-md border-t border-gray-800 flex justify-around items-center py-2.5 text-xl text-gray-400 z-40">
       <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition p-2"><i class="fas fa-home"></i></button>
       <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition p-2"><i class="fas fa-search"></i></button>
       
-      <!-- CENTER OUTLINE TRIANGLE BUTTON FOR TRINGO AI -->
+      <!-- SIMPLE TRIANGLE OUTLINE ICON -->
       <button onclick="openTringoModal()" title="Tringo AI Dashboard" class="hover:text-sky-400 transition p-2 text-2xl text-sky-400">
-        <i class="far fa-caret-square-up"></i>
+        <i class="fas fa-caret-up"></i>
       </button>
 
       <button onclick="switchPage('notif')" id="navNotif" class="hover:text-sky-400 transition p-2"><i class="far fa-bell"></i></button>
@@ -209,4 +204,5 @@
 
   <script src="app.js"></script>
 </body>
-</html>
+            </html>
+            
