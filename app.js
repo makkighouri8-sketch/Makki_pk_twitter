@@ -1,13 +1,15 @@
-/* PK Twitter Pro - Final Database-Backed Engine (app.js) */
+/* PK Twitter Pro - Non-Blocking Supabase Engine (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
 
 let supabase = null;
 try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
 } catch (e) {
-  console.error('Supabase initialization error:', e);
+  console.error('Supabase client error:', e);
 }
 
 let activeMedia = null;
@@ -20,21 +22,27 @@ let notificationsData = [
   { id: 2, type: 'like', text: 'Tringo AI liked your recent tweet.', time: '5m ago' }
 ];
 
-// App Initialization - Load from Supabase Database
 document.addEventListener('DOMContentLoaded', () => {
   loadPostsFromSupabase();
 });
 
-// Load Posts from Supabase Database
+// Load Posts with 3-second Timeout Safety
 async function loadPostsFromSupabase() {
   const timeline = document.getElementById('timeline');
   if (!timeline || !supabase) return;
 
   try {
-    const { data: posts, error } = await supabase
+    const fetchPromise = supabase
       .from('posts')
       .select('*')
       .order('created_at', { ascending: false });
+
+    // 3 Second Timeout to prevent freeze
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), 3000)
+    );
+
+    const { data: posts, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
     if (error) throw error;
 
@@ -45,11 +53,10 @@ async function loadPostsFromSupabase() {
       });
     }
   } catch (err) {
-    console.error('Error loading posts from database:', err.message);
+    console.warn('Database sync skipped/pending:', err.message);
   }
 }
 
-// Render Individual Post Card
 function renderPostElement(post) {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -101,7 +108,6 @@ function renderPostElement(post) {
   timeline.appendChild(article);
 }
 
-// Create New Post in Supabase Database
 async function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
@@ -109,20 +115,16 @@ async function createNewModalPost() {
 
   try {
     if (supabase) {
-      const { error } = await supabase
-        .from('posts')
-        .insert([
-          {
-            user_name: 'Makki',
-            user_handle: '@makki',
-            content: textVal,
-            media_url: activeMedia || null,
-            likes_count: 0,
-            retweets_count: 0
-          }
-        ]);
-
-      if (error) throw error;
+      await supabase.from('posts').insert([
+        {
+          user_name: 'Makki',
+          user_handle: '@makki',
+          content: textVal,
+          media_url: activeMedia || null,
+          likes_count: 0,
+          retweets_count: 0
+        }
+      ]);
     }
 
     if (inputEl) inputEl.value = '';
@@ -130,12 +132,10 @@ async function createNewModalPost() {
     switchPage('feed');
     loadPostsFromSupabase();
   } catch (err) {
-    console.error('Error saving post to Supabase:', err.message);
-    alert('Database save error: ' + err.message);
+    console.error('Error in post creation:', err);
   }
 }
 
-// Navigation Engine
 function switchPage(pageID) {
   ['feed', 'explore', 'notif', 'profile'].forEach(p => {
     const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
@@ -157,14 +157,10 @@ function switchPage(pageID) {
     activeNav.classList.add('text-sky-400');
   }
 
-  if (pageID === 'notif') {
-    renderNotifications();
-  }
-
+  if (pageID === 'notif') renderNotifications();
   window.scrollTo(0, 0);
 }
 
-// Profile Tab Switcher
 function switchProfileTab(tab) {
   const postsCont = document.getElementById('profPostsContainer');
   const savedCont = document.getElementById('profSavedContainer');
@@ -185,7 +181,6 @@ function switchProfileTab(tab) {
   }
 }
 
-// Tringo AI Dashboard Modal
 function openTringoModal() { document.getElementById('tringoModal').classList.remove('hidden'); }
 function closeTringoModal() { document.getElementById('tringoModal').classList.add('hidden'); }
 
@@ -219,7 +214,6 @@ function askTringoAI() {
   }, 600);
 }
 
-// Post Modal Handlers
 function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
 function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
@@ -254,10 +248,8 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Follow Button
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
-  
   if (btn.innerText === 'Follow') {
     btn.innerText = 'Following';
     btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1 rounded-full hover:bg-gray-800 transition';
@@ -267,11 +259,9 @@ function toggleFollow(btn) {
     btn.className = 'text-xs bg-sky-500 text-black font-bold px-4 py-1.5 rounded-full transition hover:bg-sky-400';
     followingCount--; 
   }
-
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// Like Button (Synced with Supabase)
 async function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -289,16 +279,11 @@ async function toggleLike(btn, pid) {
   }
   cnt.innerText = newCount;
 
-  try {
-    if (supabase) {
-      await supabase.from('posts').update({ likes_count: newCount }).eq('id', pid);
-    }
-  } catch (err) {
-    console.error('Error updating likes in DB:', err.message);
+  if (supabase) {
+    supabase.from('posts').update({ likes_count: newCount }).eq('id', pid).then();
   }
 }
 
-// Retweet Button (Synced with Supabase)
 async function toggleRetweet(btn, pid) {
   const cnt = btn.querySelector('.rt-cnt');
   if (!cnt) return;
@@ -313,16 +298,11 @@ async function toggleRetweet(btn, pid) {
   }
   cnt.innerText = newCount;
 
-  try {
-    if (supabase) {
-      await supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid);
-    }
-  } catch (err) {
-    console.error('Error updating retweets in DB:', err.message);
+  if (supabase) {
+    supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid).then();
   }
 }
 
-// Bookmark Button
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -388,7 +368,6 @@ function renderNotifications() {
   if (!notifContainer) return;
 
   let htmlContent = `<h2 class="font-extrabold text-xl mb-4">Activity Notifications</h2><div class="space-y-4 text-sm">`;
-  
   notificationsData.forEach(n => {
     let iconClass = 'fas fa-heart text-pink-500 text-lg';
     if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
@@ -425,3 +404,4 @@ function formatTime(isoString) {
 function escapeHTML(str) {
   return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+  
