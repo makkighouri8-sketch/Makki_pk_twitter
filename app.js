@@ -1,10 +1,14 @@
-/* PK Twitter Pro - Supabase Real-time Integrated Engine (app.js) */
+/* PK Twitter Pro - Debug Enabled Engine (app.js) */
 
-// Supabase Configuration
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
-const SUPABASE_ANON_KEY = 'Yahan_Apni_Asli_Publishable_Key_Paste_Karein'; // sb_publ... wali key yahan aayegi
+const SUPABASE_ANON_KEY = 'Yahan_Apni_Asli_Publishable_Key_Paste_Karein'; // Apni key yahan lagayein
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase;
+try {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+  alert('Supabase Init Error: ' + e.message);
+}
 
 let activeMedia = null;
 let mediaKind = null;
@@ -16,12 +20,10 @@ let notificationsData = [
   { id: 2, type: 'like', text: 'Tringo AI liked your recent tweet.', time: '5m ago' }
 ];
 
-// App Initialization
 document.addEventListener('DOMContentLoaded', () => {
   loadPostsFromSupabase();
 });
 
-// Load Posts from Supabase Database
 async function loadPostsFromSupabase() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -32,24 +34,22 @@ async function loadPostsFromSupabase() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
-
-    // Purani static post hata kar database wali posts load karein
-    timeline.innerHTML = '';
-    if (!posts || posts.length === 0) {
-      timeline.innerHTML = `<div class="text-center text-gray-500 py-10">Abhi koi post nahi hai. Pehli post share karein!</div>`;
+    if (error) {
+      console.error('Supabase fetch error:', error);
       return;
     }
 
-    posts.forEach(post => {
-      renderPostElement(post);
-    });
+    if (posts && posts.length > 0) {
+      timeline.innerHTML = '';
+      posts.forEach(post => {
+        renderPostElement(post);
+      });
+    }
   } catch (err) {
-    console.error('Error loading posts:', err.message);
+    console.error('Network or client error:', err.message);
   }
 }
 
-// Render Individual Post Card
 function renderPostElement(post) {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -101,7 +101,6 @@ function renderPostElement(post) {
   timeline.appendChild(article);
 }
 
-// Create New Post in Supabase
 async function createNewModalPost() {
   const textVal = document.getElementById('modalPostInput').value;
   if (!textVal.trim() && !activeMedia) return;
@@ -121,19 +120,20 @@ async function createNewModalPost() {
       ])
       .select();
 
-    if (error) throw error;
+    if (error) {
+      alert('Supabase Insert Error: ' + error.message);
+      return;
+    }
 
     document.getElementById('modalPostInput').value = '';
     closePostModal();
     switchPage('feed');
     await loadPostsFromSupabase();
   } catch (err) {
-    console.error('Error saving post:', err.message);
-    alert('Post database mein save nahi ho saki: ' + err.message);
+    alert('Exception in create post: ' + err.message);
   }
 }
 
-// Navigation
 function switchPage(pageID) {
   ['feed', 'explore', 'notif', 'profile'].forEach(p => {
     const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
@@ -162,7 +162,6 @@ function switchPage(pageID) {
   window.scrollTo(0, 0);
 }
 
-// Profile Tabs
 function switchProfileTab(tab) {
   const postsCont = document.getElementById('profPostsContainer');
   const savedCont = document.getElementById('profSavedContainer');
@@ -183,7 +182,6 @@ function switchProfileTab(tab) {
   }
 }
 
-// Tringo AI Modal
 function openTringoModal() { document.getElementById('tringoModal').classList.remove('hidden'); }
 function closeTringoModal() { document.getElementById('tringoModal').classList.add('hidden'); }
 
@@ -217,7 +215,6 @@ function askTringoAI() {
   }, 700);
 }
 
-// Modal Media Handlers
 function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
 function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
 
@@ -252,7 +249,6 @@ function removeModalMedia() {
   if (vid) vid.src = '';
 }
 
-// Follow Toggle
 function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
   
@@ -269,7 +265,6 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-// LIKE & UNLIKE TOGGLE
 async function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -293,7 +288,6 @@ async function toggleLike(btn, pid) {
   }
 }
 
-// RETWEET TOGGLE
 async function toggleRetweet(btn, pid) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = parseInt(cnt.innerText);
@@ -314,7 +308,6 @@ async function toggleRetweet(btn, pid) {
   }
 }
 
-// BOOKMARK TOGGLE
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -419,3 +412,4 @@ function formatTime(isoString) {
 function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+  
