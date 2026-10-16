@@ -1,8 +1,9 @@
-/* PakPulse - Fixed Pure REST Engine (app.js) */
+/* PakPulse - Fixed Pure REST Engine + Google Auth (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
 
+let currentUser = null;
 let activeMedia = null;
 let mediaKind = null;
 let postCounter = 100;
@@ -15,8 +16,108 @@ let notificationsData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+  initGoogleAuth();
   loadPostsFromSupabaseREST();
 });
+
+// Google OAuth Session & Profile Manager
+async function initGoogleAuth() {
+  try {
+    const sessionRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${getSupabaseToken()}`
+      }
+    });
+
+    if (sessionRes.ok) {
+      currentUser = await sessionRes.json();
+      updateHeaderUI(currentUser);
+    } else {
+      updateHeaderUI(null);
+    }
+  } catch (err) {
+    console.warn('Auth check failed:', err);
+    updateHeaderUI(null);
+  }
+}
+
+// Google Login Trigger Function
+function signInWithGoogle() {
+  const redirectUrl = encodeURIComponent(`${window.location.origin}`);
+  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
+}
+
+// Logout Function
+async function logoutUser() {
+  try {
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${getSupabaseToken()}`
+      }
+    });
+  } catch (e) {}
+  
+  localStorage.removeItem('sb-nfiplfastxflhmqblcvj-auth-token');
+  window.location.reload();
+}
+
+function getSupabaseToken() {
+  try {
+    const raw = localStorage.getItem(`sb-nfiplfastxflhmqblcvj-auth-token`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed.access_token || SUPABASE_ANON_KEY;
+    }
+  } catch (e) {}
+  return SUPABASE_ANON_KEY;
+}
+
+// Update Header Profile Icon & Logout Button
+function updateHeaderUI(user) {
+  const headerContainer = document.querySelector('header') || document.getElementById('navbarHeader');
+  const profileAvatar = document.getElementById('userProfileAvatar');
+  
+  if (user) {
+    const meta = user.user_metadata || {};
+    const avatarUrl = meta.avatar_url || meta.picture;
+    const name = meta.full_name || user.email || 'Makki';
+    const firstLetter = name.charAt(0).toUpperCase();
+
+    // Update Header Avatar
+    if (profileAvatar) {
+      if (avatarUrl) {
+        profileAvatar.innerHTML = `<img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-sky-400 object-cover" title="${name}"/>`;
+      } else {
+        profileAvatar.innerHTML = `<div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center">${firstLetter}</div>`;
+      }
+    }
+
+    // Add/Update Logout Button in Header
+    let logoutBtn = document.getElementById('googleLogoutBtn');
+    if (!logoutBtn && headerContainer) {
+      logoutBtn = document.createElement('button');
+      logoutBtn.id = 'googleLogoutBtn';
+      logoutBtn.className = 'text-xs bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-full transition ml-2';
+      logoutBtn.innerText = 'Logout';
+      logoutBtn.onclick = logoutUser;
+      headerContainer.appendChild(logoutBtn);
+    }
+  } else {
+    // If Not Logged In - Show Sign In Button
+    let loginBtn = document.getElementById('googleLoginBtn');
+    if (!loginBtn && headerContainer) {
+      loginBtn = document.createElement('button');
+      loginBtn.id = 'googleLoginBtn';
+      loginBtn.className = 'text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition ml-2';
+      loginBtn.innerText = 'Login with Google';
+      loginBtn.onclick = signInWithGoogle;
+      headerContainer.appendChild(loginBtn);
+    }
+  }
+}
 
 // Direct Supabase REST API Call - No External Library Required!
 async function loadPostsFromSupabaseREST() {
@@ -43,7 +144,7 @@ async function loadPostsFromSupabaseREST() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=created_at.desc`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        'Authorization': `Bearer ${getSupabaseToken()}`
       },
       signal: controller.signal
     });
@@ -114,15 +215,18 @@ function renderPostElement(post) {
   timeline.insertBefore(article, timeline.firstChild);
 }
 
-// FIXED: Save post to Supabase + Cache Local Storage
+// Save post to Supabase + Cache Local Storage
 async function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
   if (!textVal.trim() && !activeMedia) return;
 
+  const uName = currentUser?.user_metadata?.full_name || 'Makki';
+  const uHandle = currentUser?.email ? `@${currentUser.email.split('@')[0]}` : '@makki';
+
   const newPostData = {
-    user_name: 'Makki',
-    user_handle: '@makki',
+    user_name: uName,
+    user_handle: uHandle,
     content: textVal,
     media_url: activeMedia || null,
     likes_count: 0,
@@ -150,7 +254,7 @@ async function createNewModalPost() {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${getSupabaseToken()}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       },
@@ -378,7 +482,7 @@ function addComment(id) {
 
   const div = document.createElement('div');
   div.className = 'bg-gray-900/40 p-2 rounded-xl';
-  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
+  div.innerHTML = `<strong class="text-sky-400">${currentUser?.email ? '@' + currentUser.email.split('@')[0] : '@makki'}:</strong> ${escapeHTML(input.value)}`;
 
   if (list) list.appendChild(div);
   if (cntEl) cntEl.innerText = parseInt(cntEl.innerText || 0) + 1;
@@ -428,4 +532,4 @@ function formatTime(isoString) {
 function escapeHTML(str) {
   return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
-                                           
+                                            
