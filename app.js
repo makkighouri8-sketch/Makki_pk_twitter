@@ -1,4 +1,4 @@
-/* PakPulse - Pure REST Engine (app.js) */
+/* PakPulse - Fixed Pure REST Engine (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
@@ -38,7 +38,7 @@ async function loadPostsFromSupabaseREST() {
   // 2. Fetch fresh data via native fetch API
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=created_at.desc`, {
       headers: {
@@ -111,9 +111,10 @@ function renderPostElement(post) {
     </div>
   `;
 
-  timeline.appendChild(article);
+  timeline.insertBefore(article, timeline.firstChild);
 }
 
+// FIXED: Save post to Supabase + Cache Local Storage
 async function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
@@ -133,21 +134,39 @@ async function createNewModalPost() {
   closePostModal();
   switchPage('feed');
   
+  // Instant UI Render
   renderPostElement(newPostData);
 
-  // Background Direct REST Push
+  // Update Local Storage Cache immediately
   try {
-    fetch(`${SUPABASE_URL}/rest/v1/posts`, {
+    let localPosts = JSON.parse(localStorage.getItem('pk_posts_cache') || '[]');
+    localPosts.unshift(newPostData);
+    localStorage.setItem('pk_posts_cache', JSON.stringify(localPosts));
+  } catch (e) {}
+
+  // Save permanently to Supabase Cloud
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/posts`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'Prefer': 'return=representation'
       },
       body: JSON.stringify(newPostData)
-    }).catch(e => console.warn('Sync delayed:', e));
-  } catch (e) {}
+    });
+
+    if (res.ok) {
+      console.log('Post permanently saved in Supabase!');
+      loadPostsFromSupabaseREST();
+    } else {
+      const err = await res.json();
+      console.error('Supabase Save Error:', err);
+    }
+  } catch (e) {
+    console.warn('Network issue during cloud sync:', e);
+  }
 }
 
 function switchPage(pageID) {
@@ -408,4 +427,5 @@ function formatTime(isoString) {
 
 function escapeHTML(str) {
   return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
+      }
+                                           
