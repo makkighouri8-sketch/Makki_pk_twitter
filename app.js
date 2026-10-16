@@ -1,4 +1,4 @@
-/* PakPulse - Fixed Pure REST Engine + Google Auth (app.js) */
+/* PakPulse - Pure Black Header Engine + Google Auth (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
@@ -75,47 +75,42 @@ function getSupabaseToken() {
   return SUPABASE_ANON_KEY;
 }
 
-// Update Header Profile Icon & Logout Button
+// Update Header UI - Clean Pure Black Header (PakPulse Removed)
 function updateHeaderUI(user) {
   const headerContainer = document.querySelector('header') || document.getElementById('navbarHeader');
-  const profileAvatar = document.getElementById('userProfileAvatar');
-  
+  if (!headerContainer) return;
+
+  // Set Pure Black Styling for Top Bar
+  headerContainer.className = "w-full bg-black border-b border-gray-800/80 px-4 py-3 flex justify-between items-center shadow-md";
+
   if (user) {
     const meta = user.user_metadata || {};
     const avatarUrl = meta.avatar_url || meta.picture;
     const name = meta.full_name || user.email || 'Makki';
     const firstLetter = name.charAt(0).toUpperCase();
 
-    // Update Header Avatar
-    if (profileAvatar) {
-      if (avatarUrl) {
-        profileAvatar.innerHTML = `<img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-sky-400 object-cover" title="${name}"/>`;
-      } else {
-        profileAvatar.innerHTML = `<div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center">${firstLetter}</div>`;
-      }
-    }
+    const avatarHtml = avatarUrl 
+      ? `<img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-sky-400 object-cover" title="${name}"/>`
+      : `<div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">${firstLetter}</div>`;
 
-    // Add/Update Logout Button in Header
-    let logoutBtn = document.getElementById('googleLogoutBtn');
-    if (!logoutBtn && headerContainer) {
-      logoutBtn = document.createElement('button');
-      logoutBtn.id = 'googleLogoutBtn';
-      logoutBtn.className = 'text-xs bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-full transition ml-2';
-      logoutBtn.innerText = 'Logout';
-      logoutBtn.onclick = logoutUser;
-      headerContainer.appendChild(logoutBtn);
-    }
+    headerContainer.innerHTML = `
+      <div class="flex items-center gap-2">
+        ${avatarHtml}
+        <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">${escapeHTML(name)}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="logoutUser()" class="text-xs bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-full transition">Logout</button>
+      </div>
+    `;
   } else {
-    // If Not Logged In - Show Sign In Button
-    let loginBtn = document.getElementById('googleLoginBtn');
-    if (!loginBtn && headerContainer) {
-      loginBtn = document.createElement('button');
-      loginBtn.id = 'googleLoginBtn';
-      loginBtn.className = 'text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition ml-2';
-      loginBtn.innerText = 'Login with Google';
-      loginBtn.onclick = signInWithGoogle;
-      headerContainer.appendChild(loginBtn);
-    }
+    headerContainer.innerHTML = `
+      <div><!-- Empty Left Side (Pure Black) --></div>
+      <div class="flex items-center gap-2">
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
+      </div>
+    `;
   }
 }
 
@@ -526,10 +521,4 @@ function sharePost(id) {
 function formatTime(isoString) {
   if (!isoString) return 'Just now';
   const date = new Date(isoString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function escapeHTML(str) {
-  return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
-                                            
+  return date.toLocaleTimeString
