@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Smart Hybrid Supabase Engine (app.js) */
+/* PK Twitter Pro - Smart Non-Blocking Hybrid Supabase Engine (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
@@ -10,6 +10,14 @@ try {
   }
 } catch (e) {
   console.error('Supabase init warning:', e);
+}
+
+// Timeout Helper function: 2.5 seconds se zyada agar network late kare toh UI hang hone se bachata hai
+function fetchWithTimeout(promise, ms = 2500) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Network Timeout')), ms))
+  ]);
 }
 
 let activeMedia = null;
@@ -27,19 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPostsFromSupabase();
 });
 
-// Load Posts from Supabase with Fallback
+// Load Posts from Supabase with Non-Blocking Fallback
 async function loadPostsFromSupabase() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
 
   try {
-    if (!supabase) throw new Error('Supabase not loaded');
+    if (!supabase) throw new Error('Supabase client not initialized');
 
-    const { data: posts, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // 2.5s Timeout ke sath post request bhej rahe hain taake UI hang na ho
+    const response = await fetchWithTimeout(
+      supabase.from('posts').select('*').order('created_at', { ascending: false }),
+      2500
+    );
 
+    const { data: posts, error } = response;
     if (error) throw error;
 
     if (posts && posts.length > 0) {
@@ -122,8 +132,11 @@ async function createNewModalPost() {
 
   try {
     if (supabase) {
-      const { error } = await supabase.from('posts').insert([newPostData]);
-      if (error) throw error;
+      const response = await fetchWithTimeout(
+        supabase.from('posts').insert([newPostData]),
+        3000
+      );
+      if (response.error) throw response.error;
     }
   } catch (err) {
     console.warn('Cloud save skipped, rendering locally:', err.message);
@@ -281,7 +294,7 @@ async function toggleLike(btn, pid) {
   cnt.innerText = newCount;
 
   if (supabase && pid !== 'local') {
-    supabase.from('posts').update({ likes_count: newCount }).eq('id', pid).then();
+    fetchWithTimeout(supabase.from('posts').update({ likes_count: newCount }).eq('id', pid), 2000).catch(() => {});
   }
 }
 
@@ -300,7 +313,7 @@ async function toggleRetweet(btn, pid) {
   cnt.innerText = newCount;
 
   if (supabase && pid !== 'local') {
-    supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid).then();
+    fetchWithTimeout(supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid), 2000).catch(() => {});
   }
 }
 
@@ -404,5 +417,5 @@ function formatTime(isoString) {
 
 function escapeHTML(str) {
   return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
-        
+    }
+                                      
