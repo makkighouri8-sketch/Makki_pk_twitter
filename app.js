@@ -1,23 +1,7 @@
-/* PK Twitter Pro - Permanent Non-Blocking Hybrid Engine (app.js) */
+/* PakPulse - Pure REST Engine (app.js) */
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
-
-let supabase = null;
-try {
-  if (window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-} catch (e) {
-  console.warn('Supabase init warning:', e);
-}
-
-function fetchWithTimeout(promise, ms = 1500) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
-  ]);
-}
 
 let activeMedia = null;
 let mediaKind = null;
@@ -31,20 +15,19 @@ let notificationsData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadPostsSmartly();
+  loadPostsFromSupabaseREST();
 });
 
-async function loadPostsSmartly() {
+// Direct Supabase REST API Call - No External Library Required!
+async function loadPostsFromSupabaseREST() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
 
-  // 1. Instant load from local cache to prevent any UI freeze
+  // 1. Show local cached posts immediately
   let localPosts = [];
   try {
     const cached = localStorage.getItem('pk_posts_cache');
-    if (cached) {
-      localPosts = JSON.parse(cached);
-    }
+    if (cached) localPosts = JSON.parse(cached);
   } catch (e) {}
 
   if (localPosts.length > 0) {
@@ -52,25 +35,31 @@ async function loadPostsSmartly() {
     localPosts.forEach(post => renderPostElement(post));
   }
 
-  // 2. Background sync with Supabase
-  if (!supabase) return;
-
+  // 2. Fetch fresh data via native fetch API
   try {
-    const response = await fetchWithTimeout(
-      supabase.from('posts').select('*').order('created_at', { ascending: false }),
-      2000
-    );
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    const { data: posts, error } = response || {};
-    if (error) throw error;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=created_at.desc`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      signal: controller.signal
+    });
 
-    if (posts && posts.length > 0) {
-      timeline.innerHTML = '';
-      posts.forEach(post => renderPostElement(post));
-      localStorage.setItem('pk_posts_cache', JSON.stringify(posts));
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const posts = await res.json();
+      if (posts && posts.length > 0) {
+        timeline.innerHTML = '';
+        posts.forEach(post => renderPostElement(post));
+        localStorage.setItem('pk_posts_cache', JSON.stringify(posts));
+      }
     }
   } catch (err) {
-    console.warn('Supabase background sync skipped, using cache:', err.message);
+    console.warn('REST Fetch skipped/timed out:', err.message);
   }
 }
 
@@ -146,9 +135,19 @@ async function createNewModalPost() {
   
   renderPostElement(newPostData);
 
-  if (supabase) {
-    fetchWithTimeout(supabase.from('posts').insert([newPostData]), 2500).catch(err => console.warn('Sync queued:', err.message));
-  }
+  // Background Direct REST Push
+  try {
+    fetch(`${SUPABASE_URL}/rest/v1/posts`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(newPostData)
+    }).catch(e => console.warn('Sync delayed:', e));
+  } catch (e) {}
 }
 
 function switchPage(pageID) {
@@ -276,7 +275,7 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
-async function toggleLike(btn, pid) {
+function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
   if (!cnt) return;
@@ -292,13 +291,9 @@ async function toggleLike(btn, pid) {
     btn.classList.remove('text-pink-500');
   }
   cnt.innerText = newCount;
-
-  if (supabase && pid !== 'local') {
-    fetchWithTimeout(supabase.from('posts').update({ likes_count: newCount }).eq('id', pid), 1500).catch(() => {});
-  }
 }
 
-async function toggleRetweet(btn, pid) {
+function toggleRetweet(btn, pid) {
   const cnt = btn.querySelector('.rt-cnt');
   if (!cnt) return;
   let val = parseInt(cnt.innerText || 0);
@@ -311,10 +306,6 @@ async function toggleRetweet(btn, pid) {
     btn.classList.remove('text-green-500');
   }
   cnt.innerText = newCount;
-
-  if (supabase && pid !== 'local') {
-    fetchWithTimeout(supabase.from('posts').update({ retweets_count: newCount }).eq('id', pid), 1500).catch(() => {});
-  }
 }
 
 function toggleBookmark(btn, pid) {
@@ -418,4 +409,3 @@ function formatTime(isoString) {
 function escapeHTML(str) {
   return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
-    
