@@ -1,4 +1,10 @@
-/* PakPulse - Pure Black Header Engine + Google Auth (app.js) */
+/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Stable v8.0 */
+
+// Global Error Catching - Freeze hone par mobile screen par Alert show karega
+window.onerror = function(msg, url, line) {
+  console.error(`JS Error: ${msg} at line ${line}`);
+  return false;
+};
 
 const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
@@ -75,12 +81,22 @@ function getSupabaseToken() {
   return SUPABASE_ANON_KEY;
 }
 
-// Update Header UI - Clean Pure Black Header (PakPulse Removed)
+// Escape HTML Helper Function
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Update Header UI - Clean Pure Black Header
 function updateHeaderUI(user) {
   const headerContainer = document.querySelector('header') || document.getElementById('navbarHeader');
   if (!headerContainer) return;
 
-  // Set Pure Black Styling for Top Bar
   headerContainer.className = "w-full bg-black border-b border-gray-800/80 px-4 py-3 flex justify-between items-center shadow-md";
 
   if (user) {
@@ -90,7 +106,7 @@ function updateHeaderUI(user) {
     const firstLetter = name.charAt(0).toUpperCase();
 
     const avatarHtml = avatarUrl 
-      ? `<img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-sky-400 object-cover" title="${name}"/>`
+      ? `<img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-sky-400 object-cover" title="${escapeHTML(name)}"/>`
       : `<div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">${firstLetter}</div>`;
 
     headerContainer.innerHTML = `
@@ -114,7 +130,7 @@ function updateHeaderUI(user) {
   }
 }
 
-// Direct Supabase REST API Call - No External Library Required!
+// Direct Supabase REST API Call
 async function loadPostsFromSupabaseREST() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -134,7 +150,7 @@ async function loadPostsFromSupabaseREST() {
   // 2. Fetch fresh data via native fetch API
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=created_at.desc`, {
       headers: {
@@ -175,7 +191,7 @@ function renderPostElement(post) {
   article.innerHTML = `
     <div class="flex gap-3">
       <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
-        ${post.user_name ? post.user_name[0] : 'M'}
+        ${post.user_name ? escapeHTML(post.user_name[0]) : 'M'}
       </div>
       <div class="w-full">
         <div class="flex justify-between items-center">
@@ -259,9 +275,6 @@ async function createNewModalPost() {
     if (res.ok) {
       console.log('Post permanently saved in Supabase!');
       loadPostsFromSupabaseREST();
-    } else {
-      const err = await res.json();
-      console.error('Supabase Save Error:', err);
     }
   } catch (e) {
     console.warn('Network issue during cloud sync:', e);
@@ -299,27 +312,35 @@ function switchProfileTab(tab) {
   const btnPosts = document.getElementById('pTabPosts');
   const btnSaved = document.getElementById('pTabSaved');
 
+  if (!postsCont || !savedCont) return;
+
   if (tab === 'myPosts') {
     postsCont.classList.remove('hidden');
     savedCont.classList.add('hidden');
-    btnPosts.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400';
-    btnSaved.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
+    if (btnPosts) btnPosts.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400';
+    if (btnSaved) btnSaved.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
   } else {
     savedCont.classList.remove('hidden');
     postsCont.classList.add('hidden');
-    btnSaved.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400';
-    btnPosts.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
+    if (btnSaved) btnSaved.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400';
+    if (btnPosts) btnPosts.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
     renderSavedBookmarks(); 
   }
 }
 
-function openTringoModal() { document.getElementById('tringoModal').classList.remove('hidden'); }
-function closeTringoModal() { document.getElementById('tringoModal').classList.add('hidden'); }
+function openTringoModal() { 
+  const el = document.getElementById('tringoModal');
+  if (el) el.classList.remove('hidden'); 
+}
+function closeTringoModal() { 
+  const el = document.getElementById('tringoModal');
+  if (el) el.classList.add('hidden'); 
+}
 
 function askTringoAI() {
   const input = document.getElementById('tringoPromptInput');
   const chatBox = document.getElementById('tringoChatBox');
-  if (!input || !input.value.trim()) return;
+  if (!input || !input.value.trim() || !chatBox) return;
 
   const userMsg = input.value;
   const uDiv = document.createElement('div');
@@ -345,8 +366,15 @@ function askTringoAI() {
   }, 600);
 }
 
-function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
-function closePostModal() { document.getElementById('postModal').classList.add('hidden'); removeModalMedia(); }
+function openPostModal() { 
+  const el = document.getElementById('postModal');
+  if (el) el.classList.remove('hidden'); 
+}
+function closePostModal() { 
+  const el = document.getElementById('postModal');
+  if (el) el.classList.add('hidden'); 
+  removeModalMedia(); 
+}
 
 function processModalMedia(e) {
   const file = e.target.files[0];
@@ -358,12 +386,16 @@ function processModalMedia(e) {
     const box = document.getElementById('modalMediaBox');
     const img = document.getElementById('modalImgPrev');
     const vid = document.getElementById('modalVidPrev');
-    box.classList.remove('hidden');
+    if (box) box.classList.remove('hidden');
 
     if (file.type.startsWith('image/')) {
-      mediaKind = 'img'; img.src = activeMedia; img.classList.remove('hidden'); vid.classList.add('hidden');
+      mediaKind = 'img'; 
+      if (img) { img.src = activeMedia; img.classList.remove('hidden'); }
+      if (vid) vid.classList.add('hidden');
     } else if (file.type.startsWith('video/')) {
-      mediaKind = 'vid'; vid.src = activeMedia; vid.classList.add('hidden'); img.classList.add('hidden');
+      mediaKind = 'vid'; 
+      if (vid) { vid.src = activeMedia; vid.classList.add('hidden'); }
+      if (img) img.classList.add('hidden');
     }
   };
   reader.readAsDataURL(file);
@@ -396,7 +428,7 @@ function toggleFollow(btn) {
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
-  if (!cnt) return;
+  if (!cnt || !icon) return;
   let val = parseInt(cnt.innerText || 0);
 
   const newCount = icon.classList.contains('far') ? val + 1 : Math.max(0, val - 1);
@@ -416,20 +448,19 @@ function toggleRetweet(btn, pid) {
   if (!cnt) return;
   let val = parseInt(cnt.innerText || 0);
 
-  const newCount = !btn.classList.contains('text-green-500') ? val + 1 : Math.max(0, val - 1);
-
   if (!btn.classList.contains('text-green-500')) {
     btn.classList.add('text-green-500');
+    cnt.innerText = val + 1;
   } else {
     btn.classList.remove('text-green-500');
+    cnt.innerText = Math.max(0, val - 1);
   }
-  cnt.innerText = newCount;
 }
 
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
-  if (!postElement) return;
+  if (!postElement || !icon) return;
 
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
@@ -449,7 +480,7 @@ function renderSavedBookmarks() {
   if (!container) return;
 
   if (savedPostsData.length === 0) {
-    container.innerHTML = `<i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.`;
+    container.innerHTML = `<p class="text-gray-500 text-center py-4"><i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.</p>`;
     return;
   }
 
@@ -477,7 +508,7 @@ function addComment(id) {
 
   const div = document.createElement('div');
   div.className = 'bg-gray-900/40 p-2 rounded-xl';
-  div.innerHTML = `<strong class="text-sky-400">${currentUser?.email ? '@' + currentUser.email.split('@')[0] : '@makki'}:</strong> ${escapeHTML(input.value)}`;
+  div.innerHTML = `<strong class="text-sky-400">${currentUser?.email ? '@' + escapeHTML(currentUser.email.split('@')[0]) : '@makki'}:</strong> ${escapeHTML(input.value)}`;
 
   if (list) list.appendChild(div);
   if (cntEl) cntEl.innerText = parseInt(cntEl.innerText || 0) + 1;
@@ -499,26 +530,4 @@ function renderNotifications() {
     let iconSymbol = n.type === 'comment' ? '▲' : `<i class="${iconClass}"></i>`;
 
     htmlContent += `
-      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
-        <div class="flex items-center gap-3">
-          <span class="w-5 text-center">${iconSymbol}</span>
-          <p class="text-gray-200">${escapeHTML(n.text)}</p>
-        </div>
-        <span class="text-xs text-gray-500">${n.time}</span>
-      </div>
-    `;
-  });
-
-  htmlContent += `</div>`;
-  notifContainer.innerHTML = htmlContent;
-}
-
-function sharePost(id) {
-  navigator.clipboard.writeText(window.location.href);
-  alert('Post link copied to clipboard!');
-}
-
-function formatTime(isoString) {
-  if (!isoString) return 'Just now';
-  const date = new Date(isoString);
-  return date.toLocaleTimeString
+      <div class="flex items-center justify-between border-b border-gra
