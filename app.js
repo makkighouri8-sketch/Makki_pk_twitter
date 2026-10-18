@@ -1,8 +1,8 @@
-/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Stable v8.0 */
+/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Fixed v12.0 */
 
-// Global Error Catching - Freeze hone par mobile screen par Alert show karega
+// Global Error Handler to Prevent Complete Mobile App Freezing
 window.onerror = function(msg, url, line) {
-  console.error(`JS Error: ${msg} at line ${line}`);
+  console.error(`JS Exception Caught: ${msg} at line ${line}`);
   return false;
 };
 
@@ -25,6 +25,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initGoogleAuth();
   loadPostsFromSupabaseREST();
 });
+
+// Helper Function: HTML Escaping
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 // Google OAuth Session & Profile Manager
 async function initGoogleAuth() {
@@ -81,18 +92,7 @@ function getSupabaseToken() {
   return SUPABASE_ANON_KEY;
 }
 
-// Escape HTML Helper Function
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-// Update Header UI - Clean Pure Black Header
+// Update Header UI - Pure Black Header
 function updateHeaderUI(user) {
   const headerContainer = document.querySelector('header') || document.getElementById('navbarHeader');
   if (!headerContainer) return;
@@ -121,7 +121,7 @@ function updateHeaderUI(user) {
     `;
   } else {
     headerContainer.innerHTML = `
-      <div><!-- Empty Left Side (Pure Black) --></div>
+      <div><!-- Pure Black Design Alignment --></div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
         <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
@@ -332,6 +332,7 @@ function openTringoModal() {
   const el = document.getElementById('tringoModal');
   if (el) el.classList.remove('hidden'); 
 }
+
 function closeTringoModal() { 
   const el = document.getElementById('tringoModal');
   if (el) el.classList.add('hidden'); 
@@ -370,6 +371,7 @@ function openPostModal() {
   const el = document.getElementById('postModal');
   if (el) el.classList.remove('hidden'); 
 }
+
 function closePostModal() { 
   const el = document.getElementById('postModal');
   if (el) el.classList.add('hidden'); 
@@ -431,16 +433,15 @@ function toggleLike(btn, pid) {
   if (!cnt || !icon) return;
   let val = parseInt(cnt.innerText || 0);
 
-  const newCount = icon.classList.contains('far') ? val + 1 : Math.max(0, val - 1);
-
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-pink-500');
+    cnt.innerText = val + 1;
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-pink-500');
+    cnt.innerText = Math.max(0, val - 1);
   }
-  cnt.innerText = newCount;
 }
 
 function toggleRetweet(btn, pid) {
@@ -530,4 +531,5 @@ function renderNotifications() {
     let iconSymbol = n.type === 'comment' ? '▲' : `<i class="${iconClass}"></i>`;
 
     htmlContent += `
-      <div class="flex items-center justify-between border-b border-gra
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-cent
