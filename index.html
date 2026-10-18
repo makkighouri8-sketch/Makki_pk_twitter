@@ -7,8 +7,16 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Mobile Touch Lock & Smooth Scrolling Fix */
+    html, body {
+      touch-action: manipulation;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: none;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex justify-center pb-20 select-none bg-black text-white">
+<body class="min-h-screen flex justify-center pb-20 select-none bg-black text-white antialiased">
 
   <div class="w-full max-w-xl border-x border-gray-800 min-h-screen flex flex-col relative bg-black">
     
@@ -196,7 +204,8 @@
 
   </div>
 
-  <script src="app.js?v=9.0"></script>
+  <!-- Updated Cache Buster Version 12.0 -->
+  <script src="app.js?v=12.0"></script>
 </body>
-    </html>
-
+                                                                                                          </html>
+                                                                                                          
