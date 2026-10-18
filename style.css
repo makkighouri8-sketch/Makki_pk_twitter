@@ -1,11 +1,18 @@
-/* PK Twitter Pro - Ultimate Clean Stylesheet */
-body {
-  background-color: #000000;
+/* PK Twitter Pro - Ultimate Clean Stylesheet (Fixed Mobile Height & Touch) */
+
+html, body {
+  background-color: #000000 !important;
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   user-select: none;
   margin: 0;
   padding: 0;
+  width: 100%;
+  min-h: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -25,6 +32,12 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #333333;
+}
+
+/* Hide Scrollbar for Firefox & IE */
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Page Transitions & Animations */
