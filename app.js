@@ -1,4 +1,4 @@
-/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Fixed v23.0 */
+/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Fixed v25.0 */
 
 // Global Error Handler to Prevent Mobile App Freezing
 window.onerror = function(msg, url, line) {
@@ -433,7 +433,7 @@ function toggleFollow(btn) {
   const followingEl = document.getElementById('profileFollowingCount');
   if (btn.innerText === 'Follow') {
     btn.innerText = 'Following';
-    btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1 rounded-full hover:bg-gray-800 transition';
+    btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3 py-1.5 rounded-full hover:bg-gray-800 transition';
     followingCount++; 
   } else {
     btn.innerText = 'Follow';
@@ -531,4 +531,4 @@ function addComment(id) {
   div.innerHTML = `<strong class="text-sky-400">${currentUser?.email ? '@' + escapeHTML(currentUser.email.split('@')[0]) : '@makki'}:</strong> ${escapeHTML(input.value)}`;
 
   if (list) list.appendChild(div);
-  if (cntEl) cntEl.i
+  if (cntEl) cntEl
