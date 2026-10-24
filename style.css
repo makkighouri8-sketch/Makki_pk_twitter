@@ -1,4 +1,4 @@
-/* PK Twitter Pro - Ultimate Clean Stylesheet (Fixed Mobile Height & Touch) */
+/* PK Twitter Pro - Ultimate Clean Stylesheet (Fixed Touch & Focus States) */
 
 html, body {
   background-color: #000000 !important;
@@ -8,12 +8,18 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-h: 100vh;
+  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Hide Default Webkit Focus Rings on Mobile Taps */
+*, *:focus, *:active {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
 }
 
 /* Custom Sleek Scrollbar */
@@ -94,25 +100,21 @@ header, nav {
   color: #000000;
 }
 
-/* Prevent accidental browser focus color changes on post action buttons */
-article button {
+/* Prevent accidental browser focus color changes on action buttons */
+button, article button {
   outline: none !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
-article button:focus {
-  outline: none !important;
-  color: inherit;
-}
-
-/* Smooth Interactive Elements */
-button {
+  -webkit-tap-highlight-color: transparent !important;
   cursor: pointer;
-  transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-button:active {
-  transform: scale(0.97);
+button:focus, article button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button:active, article button:active {
+  transform: scale(0.96);
 }
 
 article {
