@@ -1,6 +1,6 @@
-/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Fixed v12.0 */
+/* PakPulse - Pure Black Header Engine + Google Auth (app.js) - Fixed v23.0 */
 
-// Global Error Handler to Prevent Complete Mobile App Freezing
+// Global Error Handler to Prevent Mobile App Freezing
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
   return false;
@@ -37,15 +37,23 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Google OAuth Session & Profile Manager
+// Safe & Non-Blocking Google Auth Initializer
 async function initGoogleAuth() {
   try {
+    const token = getSupabaseToken();
+    
+    // 3 Seconds Timeout taake request latke nahi aur mobile app freeze na ho
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
     const sessionRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${getSupabaseToken()}`
-      }
+        'Authorization': `Bearer ${token}`
+      },
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
 
     if (sessionRes.ok) {
       currentUser = await sessionRes.json();
@@ -54,7 +62,7 @@ async function initGoogleAuth() {
       updateHeaderUI(null);
     }
   } catch (err) {
-    console.warn('Auth check failed:', err);
+    console.warn('Auth check skipped/timed out:', err.message);
     updateHeaderUI(null);
   }
 }
@@ -92,12 +100,12 @@ function getSupabaseToken() {
   return SUPABASE_ANON_KEY;
 }
 
-// Update Header UI - Pure Black Header
+// Update Header UI - Pure Black Header with Fallback Avatar
 function updateHeaderUI(user) {
   const headerContainer = document.querySelector('header') || document.getElementById('navbarHeader');
   if (!headerContainer) return;
 
-  headerContainer.className = "w-full bg-black border-b border-gray-800/80 px-4 py-3 flex justify-between items-center shadow-md";
+  headerContainer.className = "w-full bg-black border-b border-gray-800/80 px-4 py-3 flex justify-between items-center shadow-md min-h-[50px]";
 
   if (user) {
     const meta = user.user_metadata || {};
@@ -121,7 +129,10 @@ function updateHeaderUI(user) {
     `;
   } else {
     headerContainer.innerHTML = `
-      <div><!-- Pure Black Design Alignment --></div>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
+        <span class="text-white font-semibold text-xs sm:text-sm">Makki</span>
+      </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
         <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
@@ -281,29 +292,34 @@ async function createNewModalPost() {
   }
 }
 
+// Foolproof Page Switcher (Fixes Profile & Navigation Freeze)
 function switchPage(pageID) {
-  ['feed', 'explore', 'notif', 'profile'].forEach(p => {
-    const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
-    if (pageEl) pageEl.classList.add('hidden');
-    
-    const navBtn = document.getElementById('nav' + p.charAt(0).toUpperCase() + p.slice(1));
-    if (navBtn) {
-      navBtn.classList.remove('text-sky-400');
-      navBtn.classList.add('text-gray-400');
+  try {
+    ['feed', 'explore', 'notif', 'profile'].forEach(p => {
+      const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
+      if (pageEl) pageEl.classList.add('hidden');
+      
+      const navBtn = document.getElementById('nav' + p.charAt(0).toUpperCase() + p.slice(1));
+      if (navBtn) {
+        navBtn.classList.remove('text-sky-400');
+        navBtn.classList.add('text-gray-400');
+      }
+    });
+
+    const targetPage = document.getElementById('page' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
+    if (targetPage) targetPage.classList.remove('hidden');
+
+    const activeNav = document.getElementById('nav' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
+    if (activeNav) {
+      activeNav.classList.remove('text-gray-400');
+      activeNav.classList.add('text-sky-400');
     }
-  });
 
-  const targetPage = document.getElementById('page' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
-  if (targetPage) targetPage.classList.remove('hidden');
-
-  const activeNav = document.getElementById('nav' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
-  if (activeNav) {
-    activeNav.classList.remove('text-gray-400');
-    activeNav.classList.add('text-sky-400');
+    if (pageID === 'notif') renderNotifications();
+    window.scrollTo(0, 0);
+  } catch (e) {
+    console.error("Navigation error:", e);
   }
-
-  if (pageID === 'notif') renderNotifications();
-  window.scrollTo(0, 0);
 }
 
 function switchProfileTab(tab) {
@@ -427,46 +443,49 @@ function toggleFollow(btn) {
   if (followingEl) followingEl.innerText = followingCount;
 }
 
+// Robust Like Toggle (Handles Counter & Color Sync)
 function toggleLike(btn, pid) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
-  if (!cnt || !icon) return;
-  let val = parseInt(cnt.innerText || 0);
+  if (!icon) return;
+  
+  let val = cnt ? parseInt(cnt.innerText || 0) : 15;
 
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-pink-500');
-    cnt.innerText = val + 1;
+    if (cnt) cnt.innerText = val + 1;
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-pink-500');
-    cnt.innerText = Math.max(0, val - 1);
+    if (cnt) cnt.innerText = Math.max(0, val - 1);
   }
 }
 
+// Robust Retweet Toggle
 function toggleRetweet(btn, pid) {
   const cnt = btn.querySelector('.rt-cnt');
-  if (!cnt) return;
-  let val = parseInt(cnt.innerText || 0);
+  let val = cnt ? parseInt(cnt.innerText || 0) : 2;
 
   if (!btn.classList.contains('text-green-500')) {
     btn.classList.add('text-green-500');
-    cnt.innerText = val + 1;
+    if (cnt) cnt.innerText = val + 1;
   } else {
     btn.classList.remove('text-green-500');
-    cnt.innerText = Math.max(0, val - 1);
+    if (cnt) cnt.innerText = Math.max(0, val - 1);
   }
 }
 
+// Robust Bookmark Toggle
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
-  if (!postElement || !icon) return;
+  if (!icon) return;
 
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-sky-400');
-    if (!savedPostsData.some(p => p.id === pid)) {
+    if (postElement && !savedPostsData.some(p => p.id === pid)) {
       savedPostsData.push({ id: pid, html: postElement.innerHTML });
     }
   } else {
@@ -512,24 +531,4 @@ function addComment(id) {
   div.innerHTML = `<strong class="text-sky-400">${currentUser?.email ? '@' + escapeHTML(currentUser.email.split('@')[0]) : '@makki'}:</strong> ${escapeHTML(input.value)}`;
 
   if (list) list.appendChild(div);
-  if (cntEl) cntEl.innerText = parseInt(cntEl.innerText || 0) + 1;
-  input.value = '';
-
-  if (section) section.classList.add('hidden');
-}
-
-function renderNotifications() {
-  const notifContainer = document.getElementById('pageNotif');
-  if (!notifContainer) return;
-
-  let htmlContent = `<h2 class="font-extrabold text-xl mb-4">Activity Notifications</h2><div class="space-y-4 text-sm">`;
-  notificationsData.forEach(n => {
-    let iconClass = 'fas fa-heart text-pink-500 text-lg';
-    if (n.type === 'follow') iconClass = 'fas fa-user-plus text-sky-400 text-lg';
-    if (n.type === 'comment') iconClass = 'text-sky-400 text-lg font-bold';
-
-    let iconSymbol = n.type === 'comment' ? '▲' : `<i class="${iconClass}"></i>`;
-
-    htmlContent += `
-      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
-        <div class="flex items-cent
+  if (cntEl) cntEl.i
