@@ -6,14 +6,14 @@
   <title>PakPulse 🇵🇰</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=25.0">
+  <link rel="stylesheet" href="style.css?v=99.0">
 </head>
 <body class="bg-black text-white antialiased min-h-screen pb-24 select-none overflow-x-hidden overflow-y-auto">
 
-  <!-- Main Responsive Outer Container (No Clipping / Text-Hide) -->
+  <!-- Main Responsive Container -->
   <div class="w-full max-w-xl mx-auto border-x border-gray-800 min-h-screen flex flex-col relative bg-black overflow-visible">
     
-    <!-- STATIC HEADER WITH FALLBACK (Guaranteed Visible) -->
+    <!-- STATIC HEADER WITH GUARANTEED VISIBILITY -->
     <header id="navbarHeader" class="sticky top-0 bg-black/95 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex justify-between items-center z-50 shadow-md min-h-[56px] w-full">
       <div class="flex items-center gap-2 shrink-0">
         <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
@@ -188,7 +188,7 @@
       </div>
     </div>
 
-    <!-- BOTTOM NAV BAR -->
+    <!-- FIXED BOTTOM NAV BAR (CORRECT MATCHING IDs) -->
     <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/95 backdrop-blur-md border-t border-gray-800 flex justify-around items-center py-2.5 text-xl text-gray-400 z-40">
       <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition p-2"><i class="fas fa-home"></i></button>
       <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition p-2"><i class="fas fa-search"></i></button>
@@ -203,7 +203,8 @@
 
   </div>
 
-  <script src="app.js?v=25.0"></script>
+  <!-- BROWSER CACHE BYPASS (v=99.0) -->
+  <script src="app.js?v=99.0"></script>
 </body>
   </html>
-  
+
