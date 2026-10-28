@@ -1,4 +1,4 @@
-/* PkTweed - LocalStorage Engine (app.js) - v101.0 */
+/* PkTweed - LocalStorage Engine (app.js) - v102.0 (Logout Fixed) */
 
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
@@ -55,11 +55,26 @@ function signInWithGoogle() {
   window.location.reload();
 }
 
-// Logout Function
+// 100% Fixed Logout Function
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
-  updateHeaderUI(null);
+  
+  const headerContainer = document.getElementById('navbarHeader');
+  if (headerContainer) {
+    headerContainer.innerHTML = `
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
+        <span class="text-white font-semibold text-xs sm:text-sm">Makki</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
+      </div>
+    `;
+  }
+  
+  alert('Successfully logged out!');
   window.location.reload();
 }
 
@@ -409,4 +424,4 @@ function sharePost() {
   } else {
     alert('Link copied to clipboard!');
   }
-                              }
+}
