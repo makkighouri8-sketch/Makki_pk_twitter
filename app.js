@@ -1,18 +1,12 @@
-/* PkTweed - Pure Black Header Engine + Google Auth (app.js) - Fixed v26.0 */
+/* PkTweed - LocalStorage Engine (app.js) - v101.0 */
 
-// Global Error Handler to Prevent Mobile App Freezing
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
   return false;
 };
 
-const SUPABASE_URL = 'https://nfiplfastxflhmqblcvj.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_jbNSW_How-oA0P6UCNx8JA__2qLmBiS';
-
 let currentUser = null;
 let activeMedia = null;
-let mediaKind = null;
-let postCounter = 100;
 let followingCount = 320; 
 let followersCount = 2500;
 let savedPostsData = []; 
@@ -22,11 +16,10 @@ let notificationsData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-  initGoogleAuth();
-  loadPostsFromSupabaseREST();
+  checkLocalAuth();
+  loadLocalPosts();
 });
 
-// Helper Function: HTML Escaping
 function escapeHTML(str) {
   if (!str) return '';
   return String(str)
@@ -37,86 +30,49 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Safe & Non-Blocking Google Auth Initializer
-async function initGoogleAuth() {
-  try {
-    const token = getSupabaseToken();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    const sessionRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${token}`
-      },
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-
-    if (sessionRes.ok) {
-      currentUser = await sessionRes.json();
-      updateHeaderUI(currentUser);
-    } else {
-      updateHeaderUI(null);
-    }
-  } catch (err) {
-    console.warn('Auth check skipped/timed out:', err.message);
+// Local Session Auth Check
+function checkLocalAuth() {
+  const savedUser = localStorage.getItem('pktweed_current_user');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    updateHeaderUI(currentUser);
+  } else {
     updateHeaderUI(null);
   }
 }
 
-// Google Login Trigger Function
+// Simulate Google Login Locally (Instant & Clean)
 function signInWithGoogle() {
-  const redirectUrl = encodeURIComponent(`${window.location.origin}`);
-  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
-}
-
-// Logout Function
-async function logoutUser() {
-  try {
-    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${getSupabaseToken()}`
-      }
-    });
-  } catch (e) {}
-  
-  localStorage.removeItem('sb-nfiplfastxflhmqblcvj-auth-token');
+  currentUser = {
+    name: 'Makki',
+    handle: '@makki',
+    email: 'makki@pktweed.pk',
+    avatar: null
+  };
+  localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
+  updateHeaderUI(currentUser);
+  alert('Successfully logged in as Makki! 🇵🇰');
   window.location.reload();
 }
 
-function getSupabaseToken() {
-  try {
-    const raw = localStorage.getItem(`sb-nfiplfastxflhmqblcvj-auth-token`);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return parsed.access_token || SUPABASE_ANON_KEY;
-    }
-  } catch (e) {}
-  return SUPABASE_ANON_KEY;
+// Logout Function
+function logoutUser() {
+  localStorage.removeItem('pktweed_current_user');
+  currentUser = null;
+  updateHeaderUI(null);
+  window.location.reload();
 }
 
-// Update Header UI - Pure Black Header with Fallback Avatar
+// Update Header UI
 function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
 
   if (user) {
-    const meta = user.user_metadata || {};
-    const avatarUrl = meta.avatar_url || meta.picture;
-    const name = meta.full_name || user.email || 'Makki';
-    const firstLetter = name.charAt(0).toUpperCase();
-
-    const avatarHtml = avatarUrl 
-      ? `<img src="${avatarUrl}" class="w-8 h-8 rounded-full border border-sky-400 object-cover" title="${escapeHTML(name)}"/>`
-      : `<div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">${firstLetter}</div>`;
-
     headerContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        ${avatarHtml}
-        <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">${escapeHTML(name)}</span>
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
+        <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px]">Makki</span>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
@@ -137,56 +93,30 @@ function updateHeaderUI(user) {
   }
 }
 
-// Direct Supabase REST API Call
-async function loadPostsFromSupabaseREST() {
+// Load Posts from LocalStorage
+function loadLocalPosts() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
 
   let localPosts = [];
   try {
-    const cached = localStorage.getItem('pktweed_posts_cache');
+    const cached = localStorage.getItem('pktweed_posts_list');
     if (cached) localPosts = JSON.parse(cached);
   } catch (e) {}
 
   if (localPosts.length > 0) {
     timeline.innerHTML = '';
-    localPosts.forEach(post => renderPostElement(post));
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=*&order=created_at.desc`, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${getSupabaseToken()}`
-      },
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (res.ok) {
-      const posts = await res.json();
-      if (posts && posts.length > 0) {
-        timeline.innerHTML = '';
-        posts.forEach(post => renderPostElement(post));
-        localStorage.setItem('pktweed_posts_cache', JSON.stringify(posts));
-      }
-    }
-  } catch (err) {
-    console.warn('REST Fetch skipped/timed out:', err.message);
+    localPosts.forEach(post => renderPostElement(post, false));
   }
 }
 
-function renderPostElement(post) {
+function renderPostElement(post, prepend = true) {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
 
   const article = document.createElement('article');
   article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg post-item';
-  article.id = 'post-' + (post.id || postCounter++);
+  article.id = 'post-' + post.id;
 
   let mediaHtml = '';
   if (post.media_url) {
@@ -196,82 +126,72 @@ function renderPostElement(post) {
   article.innerHTML = `
     <div class="flex gap-3">
       <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
-        ${post.user_name ? escapeHTML(post.user_name[0]) : 'M'}
+        ${escapeHTML(post.user_name[0])}
       </div>
       <div class="w-full">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-white">${escapeHTML(post.user_name || 'Makki')}</span>
+            <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
             <i class="fas fa-check-circle text-sky-400 text-xs"></i>
-            <span class="text-gray-500 text-sm">· Just now</span>
+            <span class="text-gray-500 text-sm">· ${escapeHTML(post.time_ago || 'Just now')}</span>
           </div>
         </div>
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
         ${mediaHtml}
         <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
-          <button onclick="toggleCommentBox('${post.id || 'local'}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id || 'local'}">0</span></button>
-          <button onclick="toggleRetweet(this, '${post.id || 'local'}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets_count || 0}</span></button>
-          <button onclick="toggleLike(this, '${post.id || 'local'}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes_count || 0}</span></button>
-          <button onclick="toggleBookmark(this, '${post.id || 'local'}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
-          <button onclick="sharePost('${post.id || 'local'}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
+          <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">0</span></button>
+          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
+          <button onclick="toggleLike(this)" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
+          <button onclick="toggleBookmark(this, '${post.id}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
+          <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
         </div>
 
-        <div id="commentSection-${post.id || 'local'}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+        <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
-            <input type="text" id="cm-input-${post.id || 'local'}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-            <button onclick="addComment('${post.id || 'local'}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+            <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
           </div>
-          <div id="cm-list-${post.id || 'local'}" class="space-y-1.5 text-xs text-gray-300"></div>
+          <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
         </div>
 
       </div>
     </div>
   `;
 
-  timeline.insertBefore(article, timeline.firstChild);
+  if (prepend) {
+    timeline.insertBefore(article, timeline.firstChild);
+  } else {
+    timeline.appendChild(article);
+  }
 }
 
-async function createNewModalPost() {
+// Create New Post Locally
+function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
   if (!textVal.trim() && !activeMedia) return;
 
-  const uName = currentUser?.user_metadata?.full_name || 'Makki';
-  const uHandle = currentUser?.email ? `@${currentUser.email.split('@')[0]}` : '@makki';
-
   const newPostData = {
-    user_name: uName,
-    user_handle: uHandle,
+    id: 'post_' + Date.now(),
+    user_name: 'Makki',
+    user_handle: '@makki',
     content: textVal,
     media_url: activeMedia || null,
-    likes_count: 0,
-    retweets_count: 0,
-    created_at: new Date().toISOString()
+    likes: 0,
+    retweets: 0,
+    time_ago: 'Just now'
   };
 
   if (inputEl) inputEl.value = '';
   closePostModal();
   switchPage('feed');
   
-  renderPostElement(newPostData);
+  renderPostElement(newPostData, true);
 
   try {
-    let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_cache') || '[]');
+    let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
     localPosts.unshift(newPostData);
-    localStorage.setItem('pktweed_posts_cache', JSON.stringify(localPosts));
-  } catch (e) {}
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/posts`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${getSupabaseToken()}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify(newPostData)
-    });
+    localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
   } catch (e) {}
 }
 
@@ -348,8 +268,8 @@ function renderNotifications() {
   `;
 }
 
-function openTringoModal() { const el = document.getElementById('tringoModal'); if (el) el.classList.remove('hidden'); }
-function closeTringoModal() { const el = document.getElementById('tringoModal'); if (el) el.classList.add('hidden'); }
+function openTringoModal() { document.getElementById('tringoModal')?.classList.remove('hidden'); }
+function closeTringoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
 
 function askTringoAI() {
   const input = document.getElementById('tringoPromptInput');
@@ -364,10 +284,10 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: Request processed successfully!";
+    let response = "Tringo AI: System is running smoothly!";
     const lower = userMsg.toLowerCase();
     if (lower.includes('post') || lower.includes('tweet')) {
-      response = "Tringo AI: Tap the bottom (+) button to publish a new PkTweed.";
+      response = "Tringo AI: Tap the (+) button below to publish a new PkTweed.";
     }
 
     const aiDiv = document.createElement('div');
@@ -378,8 +298,8 @@ function askTringoAI() {
   }, 600);
 }
 
-function openPostModal() { const el = document.getElementById('postModal'); if (el) el.classList.remove('hidden'); }
-function closePostModal() { const el = document.getElementById('postModal'); if (el) el.classList.add('hidden'); removeModalMedia(); }
+function openPostModal() { document.getElementById('postModal')?.classList.remove('hidden'); }
+function closePostModal() { document.getElementById('postModal')?.classList.add('hidden'); removeModalMedia(); }
 
 function processModalMedia(e) {
   const file = e.target.files[0];
@@ -397,29 +317,14 @@ function processModalMedia(e) {
 
 function removeModalMedia() {
   activeMedia = null;
-  const box = document.getElementById('modalMediaBox');
-  if (box) box.classList.add('hidden');
-}
-
-function toggleFollow(btn) {
-  const followingEl = document.getElementById('profileFollowingCount');
-  if (btn.innerText === 'Follow') {
-    btn.innerText = 'Following';
-    btn.className = 'text-xs border border-gray-600 text-gray-300 font-bold px-3.5 py-1.5 rounded-full hover:bg-gray-800 transition';
-    followingCount++; 
-  } else {
-    btn.innerText = 'Follow';
-    btn.className = 'text-xs bg-sky-500 text-black font-bold px-3.5 py-1.5 rounded-full transition hover:bg-sky-400';
-    followingCount--; 
-  }
-  if (followingEl) followingEl.innerText = followingCount;
+  document.getElementById('modalMediaBox')?.classList.add('hidden');
 }
 
 function toggleLike(btn) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
   if (!icon) return;
-  let val = cnt ? parseInt(cnt.innerText || 0) : 15;
+  let val = cnt ? parseInt(cnt.innerText || 0) : 0;
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-pink-500');
@@ -433,7 +338,7 @@ function toggleLike(btn) {
 
 function toggleRetweet(btn) {
   const cnt = btn.querySelector('.rt-cnt');
-  let val = cnt ? parseInt(cnt.innerText || 0) : 2;
+  let val = cnt ? parseInt(cnt.innerText || 0) : 0;
   if (!btn.classList.contains('text-green-500')) {
     btn.classList.add('text-green-500');
     if (cnt) cnt.innerText = val + 1;
@@ -478,8 +383,7 @@ function renderSavedBookmarks() {
 }
 
 function toggleCommentBox(id) {
-  const section = document.getElementById('commentSection-' + id);
-  if (section) section.classList.toggle('hidden');
+  document.getElementById('commentSection-' + id)?.classList.toggle('hidden');
 }
 
 function addComment(id) {
@@ -499,10 +403,10 @@ function addComment(id) {
   input.value = '';
 }
 
-function sharePost(id) {
+function sharePost() {
   if (navigator.share) {
-    navigator.share({ title: 'PkTweed Post', url: window.location.href }).catch(() => {});
+    navigator.share({ title: 'PkTweed', url: window.location.href }).catch(() => {});
   } else {
-    alert('Post link copied to clipboard!');
+    alert('Link copied to clipboard!');
   }
-  }
+                              }
