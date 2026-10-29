@@ -1,4 +1,4 @@
-/* PkTweed - UI Components & Event Handlers (components.js) - v1.0 */
+/* PkTweed - UI Components & Event Handlers (components.js) - v2.0 */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -111,28 +111,95 @@ function renderPostElement(post, prepend = true) {
   }
 }
 
+// Updated Profile Posts with Full Interactive Feed Style & 3-Dots Menu
 function renderProfilePosts(posts) {
   const profContainer = document.getElementById('profPostsContainer');
   if (!profContainer) return;
 
-  if (!posts || posts.length === 0) {
+  const myPosts = posts.filter(p => p.user_name === 'Makki');
+
+  if (!myPosts || myPosts.length === 0) {
     profContainer.innerHTML = `<p class="text-gray-500 text-sm py-6">Your published tweeds will appear here.</p>`;
     return;
   }
 
   profContainer.innerHTML = '';
-  posts.forEach(post => {
-    const div = document.createElement('div');
-    div.className = 'p-4 border-b border-gray-800 text-left bg-gray-900/30';
-    div.innerHTML = `
-      <div class="flex items-center gap-2 mb-1">
-        <span class="font-bold text-white text-xs">${escapeHTML(post.user_name)}</span>
-        <span class="text-gray-500 text-xs">· ${typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now'}</span>
+  myPosts.forEach(post => {
+    const article = document.createElement('article');
+    article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg post-item relative text-left';
+    article.id = 'profile-post-' + post.id;
+
+    let mediaHtml = '';
+    if (post.media_url) {
+      mediaHtml = `<img src="${post.media_url}" class="w-full max-h-80 object-cover rounded-2xl mt-3 border border-gray-800"/>`;
+    }
+
+    const timeText = typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now';
+
+    article.innerHTML = `
+      <div class="flex gap-3">
+        <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
+          ${escapeHTML(post.user_name[0])}
+        </div>
+        <div class="w-full relative">
+          
+          <!-- 3-Dots Menu Button on Top Right -->
+          <div class="absolute right-0 top-0">
+            <button onclick="togglePostDropdown('${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <!-- Dropdown Options Menu -->
+            <div id="postDropdown-${post.id}" class="hidden absolute right-0 mt-1 w-44 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl z-20 py-1.5 text-xs">
+              <button onclick="sharePost(); togglePostDropdown('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-share-square text-sky-400"></i> Share Post</button>
+              <button onclick="toggleCommentBox('${post.id}'); togglePostDropdown('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-comment text-sky-400"></i> Comment</button>
+              <button onclick="addPostToStory('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="fas fa-plus-circle text-sky-400"></i> Add Story</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pr-8">
+            <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
+            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+            <span class="text-gray-500 text-sm">· ${timeText}</span>
+          </div>
+          <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
+          ${mediaHtml}
+          
+          <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
+            <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">${post.comments_count || 0}</span></button>
+            <button onclick="toggleRetweet(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
+            <button onclick="toggleLike(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
+            <button onclick="toggleBookmark(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
+            <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
+          </div>
+
+          <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+              <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+            </div>
+            <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
+          </div>
+
+        </div>
       </div>
-      <p class="text-white text-sm">${escapeHTML(post.content)}</p>
     `;
-    profContainer.appendChild(div);
+    profContainer.appendChild(article);
   });
+}
+
+// 3-Dots Menu Toggle Function
+function togglePostDropdown(postId) {
+  const dropdown = document.getElementById('postDropdown-' + postId);
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+  }
+}
+
+// Add Post to Story Feature
+function addPostToStory(postId) {
+  alert('Your post has been successfully added to Story! 🚀🇵🇰');
+  const dropdown = document.getElementById('postDropdown-' + postId);
+  if (dropdown) dropdown.classList.add('hidden');
 }
 
 function createNewModalPost() {
@@ -414,17 +481,4 @@ function processModalMedia(e) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(evt) {
-    activeMedia = evt.target.result;
-    const box = document.getElementById('modalMediaBox');
-    const img = document.getElementById('modalImgPrev');
-    if (box) box.classList.remove('hidden');
-    if (img) img.src = activeMedia;
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeModalMedia() {
-  activeMedia = null;
-  document.getElementById('modalMediaBox')?.classList.add('hidden');
-    }
-                                             
+    activeMedia = evt.target
