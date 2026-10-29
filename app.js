@@ -1,4 +1,4 @@
-/* PkTweed - X (Twitter) Style Algorithm Engine (app.js) - v104.0 */
+/* PkTweed - X (Twitter) Style Algorithm & 1s Smooth Transitions Engine (app.js) - v105.0 */
 
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
@@ -102,7 +102,7 @@ function calculateTimeAgo(timestamp) {
   return days + 'd ago';
 }
 
-// X-Style Smart Ranking Algorithm (Scores posts based on engagement & freshness)
+// X-Style Smart Ranking Algorithm
 function loadSmartFeed() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -113,20 +113,16 @@ function loadSmartFeed() {
     if (cached) localPosts = JSON.parse(cached);
   } catch (e) {}
 
-  // X Algorithm: Sort by engagement score + recency weight
   localPosts.sort((a, b) => {
     const scoreA = (a.likes * 2) + (a.retweets * 3) + (a.comments_count || 0 * 4);
     const scoreB = (b.likes * 2) + (b.retweets * 3) + (b.comments_count || 0 * 4);
     const timeA = new Date(a.created_at || Date.now()).getTime();
     const timeB = new Date(b.created_at || Date.now()).getTime();
-    
-    // Combine engagement score with timestamp priority
     return (scoreB * 10 + timeB) - (scoreA * 10 + timeA);
   });
 
   timeline.innerHTML = '';
   if (localPosts.length === 0) {
-    // Default welcome post if empty
     renderPostElement({
       id: 'default_1',
       user_name: 'PkTweed Official',
@@ -175,9 +171,9 @@ function renderPostElement(post, prepend = true) {
         ${mediaHtml}
         <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
           <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">${post.comments_count || 0}</span></button>
-          <button onclick="toggleRetweet(this, '${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
-          <button onclick="toggleLike(this, '${post.id}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
-          <button onclick="toggleBookmark(this, '${post.id}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
+          <button onclick="toggleRetweet(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
+          <button onclick="toggleLike(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
+          <button onclick="toggleBookmark(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
           <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
         </div>
 
@@ -249,7 +245,7 @@ function createNewModalPost() {
     let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
     localPosts.unshift(newPostData);
     localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
-    loadSmartFeed(); // Reload via X Algorithm
+    loadSmartFeed();
   } catch (e) {}
 
   notificationsData.unshift({
@@ -273,6 +269,7 @@ function updatePostInStorage(postId, updateFn) {
   } catch (e) {}
 }
 
+// 1-Second Smooth Transition Like Toggle
 function toggleLike(btn, postId) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -284,13 +281,12 @@ function toggleLike(btn, postId) {
     btn.classList.add('text-pink-500');
     val += 1;
     if (cnt) cnt.innerText = val;
-    
     updatePostInStorage(postId, p => p.likes = val);
 
     notificationsData.unshift({
       id: Date.now(),
       type: 'like',
-      text: 'Your PkTweed received a new engagement boost! ❤️',
+      text: 'Your PkTweed received an engagement boost! ❤️',
       time: 'Just now'
     });
   } else {
@@ -298,11 +294,11 @@ function toggleLike(btn, postId) {
     btn.classList.remove('text-pink-500');
     val = Math.max(0, val - 1);
     if (cnt) cnt.innerText = val;
-    
     updatePostInStorage(postId, p => p.likes = val);
   }
 }
 
+// 1-Second Smooth Transition Retweet Toggle
 function toggleRetweet(btn, postId) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = cnt ? parseInt(cnt.innerText || 0) : 0;
@@ -320,6 +316,7 @@ function toggleRetweet(btn, postId) {
   }
 }
 
+// 1-Second Smooth Transition Bookmark Toggle
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -483,10 +480,10 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: X-Style Algorithm is active and ranking feeds!";
+    let response = "Tringo AI: X-Style Algorithm and smooth transitions are active!";
     const lower = userMsg.toLowerCase();
     if (lower.includes('post') || lower.includes('tweet')) {
-      response = "Tringo AI: Tap the (+) button below to publish a ranked tweed.";
+      response = "Tringo AI: Tap the (+) button below to publish your ranked tweed.";
     }
 
     const aiDiv = document.createElement('div');
@@ -517,5 +514,5 @@ function processModalMedia(e) {
 function removeModalMedia() {
   activeMedia = null;
   document.getElementById('modalMediaBox')?.classList.add('hidden');
-                         }
-    
+        }
+                              
