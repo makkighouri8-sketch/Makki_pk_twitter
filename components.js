@@ -1,4 +1,4 @@
-/* PkTweed - UI Components (components.js) - Ultra Light Stable Version */
+/* PkTweed - UI Components (components.js) - Stable Version with Saved Bookmarks & 3-Dots Menu */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -73,13 +73,24 @@ function renderPostElement(post, prepend = true) {
       <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
         ${escapeHTML(userName[0])}
       </div>
-      <div class="w-full">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-white">${escapeHTML(userName)}</span>
-            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
-            <span class="text-gray-500 text-sm">· ${timeText}</span>
+      <div class="w-full relative">
+        
+        <!-- 3-Dots Menu Button on Top Right -->
+        <div class="absolute right-0 top-0">
+          <button onclick="togglePostDropdown('${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div id="postDropdown-${post.id}" class="hidden absolute right-0 mt-1 w-44 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl z-20 py-1.5 text-xs">
+            <button onclick="sharePost(); togglePostDropdown('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-share-square text-sky-400"></i> Share Post</button>
+            <button onclick="toggleCommentBox('${post.id}'); togglePostDropdown('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-comment text-sky-400"></i> Comment</button>
+            <button onclick="addPostToStory('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="fas fa-plus-circle text-sky-400"></i> Add Story</button>
           </div>
+        </div>
+
+        <div class="flex items-center gap-2 pr-8">
+          <span class="font-bold text-white">${escapeHTML(userName)}</span>
+          <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+          <span class="text-gray-500 text-sm">· ${timeText}</span>
         </div>
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
         ${mediaHtml}
@@ -94,7 +105,7 @@ function renderPostElement(post, prepend = true) {
         <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
             <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
           </div>
           <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
         </div>
@@ -123,16 +134,88 @@ function renderProfilePosts(posts) {
 
   profContainer.innerHTML = '';
   myPosts.forEach(post => {
-    const div = document.createElement('div');
-    div.className = 'p-4 border-b border-gray-800 text-left bg-gray-900/30';
-    div.innerHTML = `
-      <div class="flex items-center gap-2 mb-1">
-        <span class="font-bold text-white text-xs">${escapeHTML(post.user_name)}</span>
-        <span class="text-gray-500 text-xs">· ${typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now'}</span>
+    const article = document.createElement('article');
+    article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg post-item relative text-left';
+    article.id = 'profile-post-' + post.id;
+
+    let mediaHtml = '';
+    if (post.media_url) {
+      mediaHtml = `<img src="${post.media_url}" class="w-full max-h-80 object-cover rounded-2xl mt-3 border border-gray-800"/>`;
+    }
+
+    const timeText = typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now';
+
+    article.innerHTML = `
+      <div class="flex gap-3">
+        <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
+          ${escapeHTML(post.user_name[0])}
+        </div>
+        <div class="w-full relative">
+          
+          <div class="absolute right-0 top-0">
+            <button onclick="togglePostDropdown('prof-${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div id="postDropdown-prof-${post.id}" class="hidden absolute right-0 mt-1 w-44 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl z-20 py-1.5 text-xs">
+              <button onclick="sharePost(); togglePostDropdown('prof-${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-share-square text-sky-400"></i> Share Post</button>
+              <button onclick="toggleCommentBox('prof-${post.id}'); togglePostDropdown('prof-${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-comment text-sky-400"></i> Comment</button>
+              <button onclick="addPostToStory('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="fas fa-plus-circle text-sky-400"></i> Add Story</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pr-8">
+            <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
+            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+            <span class="text-gray-500 text-sm">· ${timeText}</span>
+          </div>
+          <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
+          ${mediaHtml}
+          
+          <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
+            <button onclick="toggleCommentBox('prof-${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-prof-${post.id}">${post.comments_count || 0}</span></button>
+            <button onclick="toggleRetweet(this, 'prof-${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
+            <button onclick="toggleLike(this, 'prof-${post.id}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
+            <button onclick="toggleBookmark(this, 'prof-${post.id}')" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
+            <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
+          </div>
+
+          <div id="commentSection-prof-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="cm-input-prof-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+              <button onclick="addComment('prof-${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+            </div>
+            <div id="cm-list-prof-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
+          </div>
+
+        </div>
       </div>
-      <p class="text-white text-sm">${escapeHTML(post.content || '')}</p>
     `;
-    profContainer.appendChild(div);
+    profContainer.appendChild(article);
+  });
+}
+
+function togglePostDropdown(postId) {
+  const dropdown = document.getElementById('postDropdown-' + postId);
+  if (dropdown) dropdown.classList.toggle('hidden');
+}
+
+function addPostToStory(postId) {
+  alert('Aapki post story mein successfully add ho gayi hai! 🚀🇵🇰');
+}
+
+function renderSavedBookmarks() {
+  const container = document.getElementById('bookmarkList');
+  if (!container) return;
+  if (savedPostsData.length === 0) {
+    container.innerHTML = `<p class="text-gray-500 text-center py-4"><i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.</p>`;
+    return;
+  }
+  container.innerHTML = '';
+  savedPostsData.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bg-gray-900/40 border border-gray-800 rounded-2xl p-3 text-left mb-3';
+    wrap.innerHTML = item.html;
+    container.appendChild(wrap);
   });
 }
 
@@ -167,9 +250,10 @@ function createNewModalPost() {
 
 function updatePostInStorage(postId, updateFn) {
   try {
+    let cleanId = postId.toString().replace('prof-', '');
     let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
     localPosts = localPosts.map(p => {
-      if (p.id === postId) updateFn(p);
+      if (p.id == cleanId) updateFn(p);
       return p;
     });
     localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
@@ -215,13 +299,20 @@ function toggleRetweet(btn, postId) {
 
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
+  const cleanId = pid.toString().replace('prof-', '');
+  const postElement = document.getElementById('post-' + cleanId) || document.getElementById('profile-post-' + cleanId);
   if (!icon) return;
+
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-sky-400');
+    if (postElement && !savedPostsData.some(p => p.id === cleanId)) {
+      savedPostsData.push({ id: cleanId, html: postElement.innerHTML });
+    }
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-sky-400');
+    savedPostsData = savedPostsData.filter(p => p.id !== cleanId);
   }
 }
 
@@ -253,7 +344,7 @@ function sharePost() {
   if (navigator.share) {
     navigator.share({ title: 'PkTweed', url: window.location.href }).catch(() => {});
   } else {
-    alert('Link copied!');
+    alert('Link copied to clipboard!');
   }
 }
 
@@ -279,14 +370,21 @@ function switchPage(pageID) {
 function switchProfileTab(tab) {
   const postsCont = document.getElementById('profPostsContainer');
   const savedCont = document.getElementById('profSavedContainer');
+  const btnPosts = document.getElementById('pTabPosts');
+  const btnSaved = document.getElementById('pTabSaved');
   if (!postsCont || !savedCont) return;
 
   if (tab === 'myPosts') {
     postsCont.classList.remove('hidden');
     savedCont.classList.add('hidden');
+    if (btnPosts) btnPosts.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold';
+    if (btnSaved) btnSaved.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
   } else {
     savedCont.classList.remove('hidden');
     postsCont.classList.add('hidden');
+    if (btnSaved) btnSaved.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold';
+    if (btnPosts) btnPosts.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
+    renderSavedBookmarks();
   }
 }
 
@@ -328,3 +426,4 @@ function removeModalMedia() {
   activeMedia = null;
   document.getElementById('modalMediaBox')?.classList.add('hidden');
 }
+  
