@@ -1,4 +1,4 @@
-/* PkTweed - LocalStorage Engine (app.js) - v102.0 (Logout Fixed) */
+/* PkTweed - Ultimate Algorithm Engine (app.js) - v103.0 */
 
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
@@ -41,7 +41,7 @@ function checkLocalAuth() {
   }
 }
 
-// Simulate Google Login Locally (Instant & Clean)
+// Simulate Google Login Locally
 function signInWithGoogle() {
   currentUser = {
     name: 'Makki',
@@ -55,25 +55,11 @@ function signInWithGoogle() {
   window.location.reload();
 }
 
-// 100% Fixed Logout Function
+// Logout Function
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
-  
-  const headerContainer = document.getElementById('navbarHeader');
-  if (headerContainer) {
-    headerContainer.innerHTML = `
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
-        <span class="text-white font-semibold text-xs sm:text-sm">Makki</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
-        <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
-      </div>
-    `;
-  }
-  
+  updateHeaderUI(null);
   alert('Successfully logged out!');
   window.location.reload();
 }
@@ -108,7 +94,21 @@ function updateHeaderUI(user) {
   }
 }
 
-// Load Posts from LocalStorage
+// Smart Time Calculation Algorithm
+function calculateTimeAgo(timestamp) {
+  if (!timestamp) return 'Just now';
+  const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+  
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes + 'm ago';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + 'h ago';
+  const days = Math.floor(hours / 24);
+  return days + 'd ago';
+}
+
+// Load Posts & Sync Profile Posts
 function loadLocalPosts() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -123,6 +123,8 @@ function loadLocalPosts() {
     timeline.innerHTML = '';
     localPosts.forEach(post => renderPostElement(post, false));
   }
+  
+  renderProfilePosts(localPosts);
 }
 
 function renderPostElement(post, prepend = true) {
@@ -138,6 +140,8 @@ function renderPostElement(post, prepend = true) {
     mediaHtml = `<img src="${post.media_url}" class="w-full max-h-80 object-cover rounded-2xl mt-3 border border-gray-800"/>`;
   }
 
+  const timeText = calculateTimeAgo(post.created_at);
+
   article.innerHTML = `
     <div class="flex gap-3">
       <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
@@ -148,7 +152,7 @@ function renderPostElement(post, prepend = true) {
           <div class="flex items-center gap-2">
             <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
             <i class="fas fa-check-circle text-sky-400 text-xs"></i>
-            <span class="text-gray-500 text-sm">· ${escapeHTML(post.time_ago || 'Just now')}</span>
+            <span class="text-gray-500 text-sm">· ${timeText}</span>
           </div>
         </div>
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
@@ -180,7 +184,32 @@ function renderPostElement(post, prepend = true) {
   }
 }
 
-// Create New Post Locally
+// Profile Posts Automatic Sync
+function renderProfilePosts(posts) {
+  const profContainer = document.getElementById('profPostsContainer');
+  if (!profContainer) return;
+
+  if (!posts || posts.length === 0) {
+    profContainer.innerHTML = `<p class="text-gray-500 text-sm py-6">Your published tweeds will appear here.</p>`;
+    return;
+  }
+
+  profContainer.innerHTML = '';
+  posts.forEach(post => {
+    const div = document.createElement('div');
+    div.className = 'p-4 border-b border-gray-800 text-left bg-gray-900/30';
+    div.innerHTML = `
+      <div class="flex items-center gap-2 mb-1">
+        <span class="font-bold text-white text-xs">${escapeHTML(post.user_name)}</span>
+        <span class="text-gray-500 text-xs">· ${calculateTimeAgo(post.created_at)}</span>
+      </div>
+      <p class="text-white text-sm">${escapeHTML(post.content)}</p>
+    `;
+    profContainer.appendChild(div);
+  });
+}
+
+// Create New Post with Algorithm Triggers & Notifications
 function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
@@ -194,7 +223,7 @@ function createNewModalPost() {
     media_url: activeMedia || null,
     likes: 0,
     retweets: 0,
-    time_ago: 'Just now'
+    created_at: new Date().toISOString()
   };
 
   if (inputEl) inputEl.value = '';
@@ -207,7 +236,16 @@ function createNewModalPost() {
     let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
     localPosts.unshift(newPostData);
     localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
+    renderProfilePosts(localPosts);
   } catch (e) {}
+
+  // Trigger Automatic Notification for Activity
+  notificationsData.unshift({
+    id: Date.now(),
+    type: 'alert',
+    text: 'Your PkTweed was successfully broadcasted to the network! 🚀',
+    time: 'Just now'
+  });
 }
 
 function switchPage(pageID) {
@@ -299,10 +337,10 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: System is running smoothly!";
+    let response = "Tringo AI: Algorithm running at peak performance!";
     const lower = userMsg.toLowerCase();
     if (lower.includes('post') || lower.includes('tweet')) {
-      response = "Tringo AI: Tap the (+) button below to publish a new PkTweed.";
+      response = "Tringo AI: Tap the (+) button below to push a new tweed.";
     }
 
     const aiDiv = document.createElement('div');
@@ -344,6 +382,13 @@ function toggleLike(btn) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-pink-500');
     if (cnt) cnt.innerText = val + 1;
+    
+    notificationsData.unshift({
+      id: Date.now(),
+      type: 'like',
+      text: 'Someone liked your PkTweed! ❤️',
+      time: 'Just now'
+    });
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-pink-500');
@@ -416,6 +461,13 @@ function addComment(id) {
     cntEl.innerText = parseInt(cntEl.innerText || 0) + 1;
   }
   input.value = '';
+
+  notificationsData.unshift({
+    id: Date.now(),
+    type: 'comment',
+    text: 'You received a new reply on your tweed! 💬',
+    time: 'Just now'
+  });
 }
 
 function sharePost() {
@@ -424,4 +476,5 @@ function sharePost() {
   } else {
     alert('Link copied to clipboard!');
   }
-}
+          }
+  
