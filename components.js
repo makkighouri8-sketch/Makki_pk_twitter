@@ -1,4 +1,4 @@
-/* PkTweed - UI Components & Event Handlers (components.js) - v2.0 */
+/* PkTweed - UI Components & Event Handlers (components.js) - v2.1 (Safe Fix) */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -32,12 +32,12 @@ function loadSmartFeed() {
     if (cached) localPosts = JSON.parse(cached);
   } catch (e) {}
 
-  if (typeof sortPostsByXAlgorithm === 'function') {
+  if (typeof sortPostsByXAlgorithm === 'function' && localPosts.length > 0) {
     localPosts = sortPostsByXAlgorithm(localPosts);
   }
 
   timeline.innerHTML = '';
-  if (localPosts.length === 0) {
+  if (!localPosts || localPosts.length === 0) {
     renderPostElement({
       id: 'default_1',
       user_name: 'PkTweed Official',
@@ -51,12 +51,12 @@ function loadSmartFeed() {
     localPosts.forEach(post => renderPostElement(post, false));
   }
 
-  renderProfilePosts(localPosts);
+  renderProfilePosts(localPosts || []);
 }
 
 function renderPostElement(post, prepend = true) {
   const timeline = document.getElementById('timeline');
-  if (!timeline) return;
+  if (!timeline || !post) return;
 
   const article = document.createElement('article');
   article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg post-item';
@@ -68,16 +68,17 @@ function renderPostElement(post, prepend = true) {
   }
 
   const timeText = typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now';
+  const userName = post.user_name || 'Makki';
 
   article.innerHTML = `
     <div class="flex gap-3">
       <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
-        ${escapeHTML(post.user_name[0])}
+        ${escapeHTML(userName[0])}
       </div>
       <div class="w-full">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
+            <span class="font-bold text-white">${escapeHTML(userName)}</span>
             <i class="fas fa-check-circle text-sky-400 text-xs"></i>
             <span class="text-gray-500 text-sm">· ${timeText}</span>
           </div>
@@ -95,7 +96,7 @@ function renderPostElement(post, prepend = true) {
         <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
           <div class="flex gap-2 mb-2">
             <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+            <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
           </div>
           <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
         </div>
@@ -111,14 +112,19 @@ function renderPostElement(post, prepend = true) {
   }
 }
 
-// Updated Profile Posts with Full Interactive Feed Style & 3-Dots Menu
+// Safe Profile Posts Renderer with 3-Dots Menu
 function renderProfilePosts(posts) {
   const profContainer = document.getElementById('profPostsContainer');
   if (!profContainer) return;
 
-  const myPosts = posts.filter(p => p.user_name === 'Makki');
+  if (!posts || posts.length === 0) {
+    profContainer.innerHTML = `<p class="text-gray-500 text-sm py-6">Your published tweeds will appear here.</p>`;
+    return;
+  }
 
-  if (!myPosts || myPosts.length === 0) {
+  const myPosts = posts.filter(p => p && p.user_name === 'Makki');
+
+  if (myPosts.length === 0) {
     profContainer.innerHTML = `<p class="text-gray-500 text-sm py-6">Your published tweeds will appear here.</p>`;
     return;
   }
@@ -175,7 +181,7 @@ function renderProfilePosts(posts) {
           <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
             <div class="flex gap-2 mb-2">
               <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
-              <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
+              <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
             </div>
             <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
           </div>
@@ -444,6 +450,7 @@ function renderNotifications() {
 }
 
 function openTringoModal() { document.getElementById('tringoModal')?.classList.remove('hidden'); }
+function closeTornigoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
 function closeTringoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
 
 function askTringoAI() {
@@ -473,12 +480,4 @@ function askTringoAI() {
   }, 600);
 }
 
-function openPostModal() { document.getElementById('postModal')?.classList.remove('hidden'); }
-function closePostModal() { document.getElementById('postModal')?.classList.add('hidden'); removeModalMedia(); }
-
-function processModalMedia(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    activeMedia = evt.target
+function openPostModal() { document.getElementById('
