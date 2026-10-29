@@ -47,9 +47,9 @@
                 
                 <div class="flex justify-between text-gray-500 text-sm mt-3 w-full pr-2">
                   <button onclick="toggleCommentBox('1')" class="hover:text-sky-400 flex items-center gap-1.5 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-1">0</span></button>
-                  <button onclick="toggleRetweet(this, '1')" class="hover:text-green-500 flex items-center gap-1.5 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">2</span></button>
-                  <button onclick="toggleLike(this, '1')" class="hover:text-pink-500 flex items-center gap-1.5 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">15</span></button>
-                  <button onclick="toggleBookmark(this, '1')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
+                  <button onclick="toggleRetweet(this, '1')" style="transition: all 1s ease-in-out;" class="hover:text-green-500 flex items-center gap-1.5 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">2</span></button>
+                  <button onclick="toggleLike(this, '1')" style="transition: all 1s ease-in-out;" class="hover:text-pink-500 flex items-center gap-1.5 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">15</span></button>
+                  <button onclick="toggleBookmark(this, '1')" style="transition: all 1s ease-in-out;" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
                   <button onclick="sharePost('1')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
                 </div>
 
@@ -179,18 +179,25 @@
       </div>
     </div>
 
-    <!-- FIXED BOTTOM NAV BAR -->
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/95 backdrop-blur-md border-t border-gray-800 flex justify-around items-center py-2.5 text-xl text-gray-400 z-40">
+    <!-- FIXED BOTTOM NAV BAR (Neon Outline Triangle for Tringo AI) -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-black/95 backdrop-blur-md border-t border-gray-800 flex justify-around items-center py-2 text-xl text-gray-400 z-40">
       <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition p-2"><i class="fas fa-home"></i></button>
       <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition p-2"><i class="fas fa-search"></i></button>
-      <button onclick="openTringoModal()" title="Tringo AI" class="hover:text-sky-400 transition p-2 text-2xl text-sky-400 font-extrabold leading-none">▲</button>
+      
+      <!-- Neon Outline Triangle - Larger Size & Glowing Effect -->
+      <button onclick="openTringoModal()" title="Tringo AI" class="transition p-1 flex items-center justify-center group">
+        <svg class="w-8 h-8 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        </svg>
+      </button>
+
       <button onclick="switchPage('notif')" id="navNotif" class="hover:text-sky-400 transition p-2"><i class="far fa-bell"></i></button>
       <button onclick="switchPage('profile')" id="navProfile" class="hover:text-sky-400 transition p-2"><i class="far fa-user"></i></button>
     </nav>
 
   </div>
 
-  <script src="app.js?v=100.0"></script>
+  <script src="app.js?v=105.0"></script>
 </body>
   </html>
   
