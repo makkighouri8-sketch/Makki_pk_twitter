@@ -1,4 +1,4 @@
-/* PkTweed - Ultimate Algorithm Engine (app.js) - v103.0 */
+/* PkTweed - X (Twitter) Style Algorithm Engine (app.js) - v104.0 */
 
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
@@ -17,7 +17,7 @@ let notificationsData = [
 
 document.addEventListener('DOMContentLoaded', () => {
   checkLocalAuth();
-  loadLocalPosts();
+  loadSmartFeed();
 });
 
 function escapeHTML(str) {
@@ -30,7 +30,6 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Local Session Auth Check
 function checkLocalAuth() {
   const savedUser = localStorage.getItem('pktweed_current_user');
   if (savedUser) {
@@ -41,7 +40,6 @@ function checkLocalAuth() {
   }
 }
 
-// Simulate Google Login Locally
 function signInWithGoogle() {
   currentUser = {
     name: 'Makki',
@@ -55,7 +53,6 @@ function signInWithGoogle() {
   window.location.reload();
 }
 
-// Logout Function
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
@@ -64,7 +61,6 @@ function logoutUser() {
   window.location.reload();
 }
 
-// Update Header UI
 function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
@@ -94,11 +90,9 @@ function updateHeaderUI(user) {
   }
 }
 
-// Smart Time Calculation Algorithm
 function calculateTimeAgo(timestamp) {
   if (!timestamp) return 'Just now';
   const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
-  
   if (seconds < 60) return 'Just now';
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return minutes + 'm ago';
@@ -108,8 +102,8 @@ function calculateTimeAgo(timestamp) {
   return days + 'd ago';
 }
 
-// Load Posts & Sync Profile Posts
-function loadLocalPosts() {
+// X-Style Smart Ranking Algorithm (Scores posts based on engagement & freshness)
+function loadSmartFeed() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
 
@@ -119,11 +113,33 @@ function loadLocalPosts() {
     if (cached) localPosts = JSON.parse(cached);
   } catch (e) {}
 
-  if (localPosts.length > 0) {
-    timeline.innerHTML = '';
+  // X Algorithm: Sort by engagement score + recency weight
+  localPosts.sort((a, b) => {
+    const scoreA = (a.likes * 2) + (a.retweets * 3) + (a.comments_count || 0 * 4);
+    const scoreB = (b.likes * 2) + (b.retweets * 3) + (b.comments_count || 0 * 4);
+    const timeA = new Date(a.created_at || Date.now()).getTime();
+    const timeB = new Date(b.created_at || Date.now()).getTime();
+    
+    // Combine engagement score with timestamp priority
+    return (scoreB * 10 + timeB) - (scoreA * 10 + timeA);
+  });
+
+  timeline.innerHTML = '';
+  if (localPosts.length === 0) {
+    // Default welcome post if empty
+    renderPostElement({
+      id: 'default_1',
+      user_name: 'PkTweed Official',
+      content: "Welcome to PkTweed! Pakistan's decentralized smart social media network is running live. 🇵🇰✨",
+      likes: 15,
+      retweets: 2,
+      comments_count: 0,
+      created_at: new Date().toISOString()
+    }, false);
+  } else {
     localPosts.forEach(post => renderPostElement(post, false));
   }
-  
+
   renderProfilePosts(localPosts);
 }
 
@@ -158,9 +174,9 @@ function renderPostElement(post, prepend = true) {
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
         ${mediaHtml}
         <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
-          <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">0</span></button>
-          <button onclick="toggleRetweet(this)" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
-          <button onclick="toggleLike(this)" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
+          <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">${post.comments_count || 0}</span></button>
+          <button onclick="toggleRetweet(this, '${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500 transition"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
+          <button onclick="toggleLike(this, '${post.id}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500 transition"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
           <button onclick="toggleBookmark(this, '${post.id}')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-bookmark"></i></button>
           <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
         </div>
@@ -184,7 +200,6 @@ function renderPostElement(post, prepend = true) {
   }
 }
 
-// Profile Posts Automatic Sync
 function renderProfilePosts(posts) {
   const profContainer = document.getElementById('profPostsContainer');
   if (!profContainer) return;
@@ -209,7 +224,6 @@ function renderProfilePosts(posts) {
   });
 }
 
-// Create New Post with Algorithm Triggers & Notifications
 function createNewModalPost() {
   const inputEl = document.getElementById('modalPostInput');
   const textVal = inputEl ? inputEl.value : '';
@@ -223,6 +237,7 @@ function createNewModalPost() {
     media_url: activeMedia || null,
     likes: 0,
     retweets: 0,
+    comments_count: 0,
     created_at: new Date().toISOString()
   };
 
@@ -230,22 +245,153 @@ function createNewModalPost() {
   closePostModal();
   switchPage('feed');
   
-  renderPostElement(newPostData, true);
-
   try {
     let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
     localPosts.unshift(newPostData);
     localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
-    renderProfilePosts(localPosts);
+    loadSmartFeed(); // Reload via X Algorithm
   } catch (e) {}
 
-  // Trigger Automatic Notification for Activity
   notificationsData.unshift({
     id: Date.now(),
     type: 'alert',
-    text: 'Your PkTweed was successfully broadcasted to the network! 🚀',
+    text: 'Your PkTweed was successfully distributed by the algorithm! 🚀',
     time: 'Just now'
   });
+}
+
+function updatePostInStorage(postId, updateFn) {
+  try {
+    let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
+    localPosts = localPosts.map(p => {
+      if (p.id === postId) {
+        updateFn(p);
+      }
+      return p;
+    });
+    localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
+  } catch (e) {}
+}
+
+function toggleLike(btn, postId) {
+  const icon = btn.querySelector('i');
+  const cnt = btn.querySelector('.like-cnt');
+  if (!icon) return;
+  let val = cnt ? parseInt(cnt.innerText || 0) : 0;
+  
+  if (icon.classList.contains('far')) {
+    icon.classList.replace('far', 'fas');
+    btn.classList.add('text-pink-500');
+    val += 1;
+    if (cnt) cnt.innerText = val;
+    
+    updatePostInStorage(postId, p => p.likes = val);
+
+    notificationsData.unshift({
+      id: Date.now(),
+      type: 'like',
+      text: 'Your PkTweed received a new engagement boost! ❤️',
+      time: 'Just now'
+    });
+  } else {
+    icon.classList.replace('fas', 'far');
+    btn.classList.remove('text-pink-500');
+    val = Math.max(0, val - 1);
+    if (cnt) cnt.innerText = val;
+    
+    updatePostInStorage(postId, p => p.likes = val);
+  }
+}
+
+function toggleRetweet(btn, postId) {
+  const cnt = btn.querySelector('.rt-cnt');
+  let val = cnt ? parseInt(cnt.innerText || 0) : 0;
+  
+  if (!btn.classList.contains('text-green-500')) {
+    btn.classList.add('text-green-500');
+    val += 1;
+    if (cnt) cnt.innerText = val;
+    updatePostInStorage(postId, p => p.retweets = val);
+  } else {
+    btn.classList.remove('text-green-500');
+    val = Math.max(0, val - 1);
+    if (cnt) cnt.innerText = val;
+    updatePostInStorage(postId, p => p.retweets = val);
+  }
+}
+
+function toggleBookmark(btn, pid) {
+  const icon = btn.querySelector('i');
+  const postElement = document.getElementById('post-' + pid);
+  if (!icon) return;
+
+  if (icon.classList.contains('far')) {
+    icon.classList.replace('far', 'fas');
+    btn.classList.add('text-sky-400');
+    if (postElement && !savedPostsData.some(p => p.id === pid)) {
+      savedPostsData.push({ id: pid, html: postElement.innerHTML });
+    }
+  } else {
+    icon.classList.replace('fas', 'far');
+    btn.classList.remove('text-sky-400');
+    savedPostsData = savedPostsData.filter(p => p.id !== pid);
+  }
+}
+
+function renderSavedBookmarks() {
+  const container = document.getElementById('bookmarkList');
+  if (!container) return;
+  if (savedPostsData.length === 0) {
+    container.innerHTML = `<p class="text-gray-500 text-center py-4"><i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.</p>`;
+    return;
+  }
+  container.innerHTML = '';
+  savedPostsData.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bg-gray-900/40 border border-gray-800 rounded-2xl p-3 text-left mb-3';
+    wrap.innerHTML = item.html;
+    container.appendChild(wrap);
+  });
+}
+
+function toggleCommentBox(id) {
+  document.getElementById('commentSection-' + id)?.classList.toggle('hidden');
+}
+
+function addComment(id) {
+  const input = document.getElementById('cm-input-' + id);
+  const cntEl = document.getElementById('cm-cnt-' + id);
+  const list = document.getElementById('cm-list-' + id);
+  if (!input || !input.value.trim() || !list) return;
+
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900/40 p-2 rounded-xl';
+  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
+  list.appendChild(div);
+
+  let currentComments = 0;
+  if (cntEl) {
+    currentComments = parseInt(cntEl.innerText || 0) + 1;
+    cntEl.innerText = currentComments;
+  }
+  
+  updatePostInStorage(id, p => p.comments_count = currentComments);
+  input.value = '';
+
+  notificationsData.unshift({
+    id: Date.now(),
+    type: 'comment',
+    text: 'Someone replied to your PkTweed! 💬',
+    time: 'Just now'
+  });
+}
+
+function sharePost() {
+  if (navigator.share) {
+    navigator.share({ title: 'PkTweed', url: window.location.href }).catch(() => {});
+  } else {
+    alert('Link copied to clipboard!');
+  }
 }
 
 function switchPage(pageID) {
@@ -337,10 +483,10 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: Algorithm running at peak performance!";
+    let response = "Tringo AI: X-Style Algorithm is active and ranking feeds!";
     const lower = userMsg.toLowerCase();
     if (lower.includes('post') || lower.includes('tweet')) {
-      response = "Tringo AI: Tap the (+) button below to push a new tweed.";
+      response = "Tringo AI: Tap the (+) button below to publish a ranked tweed.";
     }
 
     const aiDiv = document.createElement('div');
@@ -371,110 +517,5 @@ function processModalMedia(e) {
 function removeModalMedia() {
   activeMedia = null;
   document.getElementById('modalMediaBox')?.classList.add('hidden');
-}
-
-function toggleLike(btn) {
-  const icon = btn.querySelector('i');
-  const cnt = btn.querySelector('.like-cnt');
-  if (!icon) return;
-  let val = cnt ? parseInt(cnt.innerText || 0) : 0;
-  if (icon.classList.contains('far')) {
-    icon.classList.replace('far', 'fas');
-    btn.classList.add('text-pink-500');
-    if (cnt) cnt.innerText = val + 1;
+                         }
     
-    notificationsData.unshift({
-      id: Date.now(),
-      type: 'like',
-      text: 'Someone liked your PkTweed! ❤️',
-      time: 'Just now'
-    });
-  } else {
-    icon.classList.replace('fas', 'far');
-    btn.classList.remove('text-pink-500');
-    if (cnt) cnt.innerText = Math.max(0, val - 1);
-  }
-}
-
-function toggleRetweet(btn) {
-  const cnt = btn.querySelector('.rt-cnt');
-  let val = cnt ? parseInt(cnt.innerText || 0) : 0;
-  if (!btn.classList.contains('text-green-500')) {
-    btn.classList.add('text-green-500');
-    if (cnt) cnt.innerText = val + 1;
-  } else {
-    btn.classList.remove('text-green-500');
-    if (cnt) cnt.innerText = Math.max(0, val - 1);
-  }
-}
-
-function toggleBookmark(btn, pid) {
-  const icon = btn.querySelector('i');
-  const postElement = document.getElementById('post-' + pid);
-  if (!icon) return;
-
-  if (icon.classList.contains('far')) {
-    icon.classList.replace('far', 'fas');
-    btn.classList.add('text-sky-400');
-    if (postElement && !savedPostsData.some(p => p.id === pid)) {
-      savedPostsData.push({ id: pid, html: postElement.innerHTML });
-    }
-  } else {
-    icon.classList.replace('fas', 'far');
-    btn.classList.remove('text-sky-400');
-    savedPostsData = savedPostsData.filter(p => p.id !== pid);
-  }
-}
-
-function renderSavedBookmarks() {
-  const container = document.getElementById('bookmarkList');
-  if (!container) return;
-  if (savedPostsData.length === 0) {
-    container.innerHTML = `<p class="text-gray-500 text-center py-4"><i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>No saved bookmarks yet.</p>`;
-    return;
-  }
-  container.innerHTML = '';
-  savedPostsData.forEach(item => {
-    const wrap = document.createElement('div');
-    wrap.className = 'bg-gray-900/40 border border-gray-800 rounded-2xl p-3 text-left mb-3';
-    wrap.innerHTML = item.html;
-    container.appendChild(wrap);
-  });
-}
-
-function toggleCommentBox(id) {
-  document.getElementById('commentSection-' + id)?.classList.toggle('hidden');
-}
-
-function addComment(id) {
-  const input = document.getElementById('cm-input-' + id);
-  const cntEl = document.getElementById('cm-cnt-' + id);
-  const list = document.getElementById('cm-list-' + id);
-  if (!input || !input.value.trim() || !list) return;
-
-  const div = document.createElement('div');
-  div.className = 'bg-gray-900/40 p-2 rounded-xl';
-  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
-  list.appendChild(div);
-
-  if (cntEl) {
-    cntEl.innerText = parseInt(cntEl.innerText || 0) + 1;
-  }
-  input.value = '';
-
-  notificationsData.unshift({
-    id: Date.now(),
-    type: 'comment',
-    text: 'You received a new reply on your tweed! 💬',
-    time: 'Just now'
-  });
-}
-
-function sharePost() {
-  if (navigator.share) {
-    navigator.share({ title: 'PkTweed', url: window.location.href }).catch(() => {});
-  } else {
-    alert('Link copied to clipboard!');
-  }
-          }
-  
