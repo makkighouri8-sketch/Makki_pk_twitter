@@ -1,4 +1,4 @@
-/* PkTweed - UI Components & Event Handlers (components.js) - v2.1 (Safe Fix) */
+/* PkTweed - UI Components & Event Handlers (components.js) - v2.2 (Instant Execution Fix) */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -6,6 +6,10 @@ let notificationsData = [
   { id: 1, type: 'follow', text: 'Tringo AI started following your profile.', time: '1m ago' },
   { id: 2, type: 'like', text: 'Tringo AI liked your recent PkTweed.', time: '5m ago' }
 ];
+
+// Run immediately to avoid DOMContentLoaded missing issue
+if (typeof checkLocalAuth === 'function') checkLocalAuth();
+loadSmartFeed();
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof checkLocalAuth === 'function') checkLocalAuth();
@@ -112,7 +116,7 @@ function renderPostElement(post, prepend = true) {
   }
 }
 
-// Safe Profile Posts Renderer with 3-Dots Menu
+// Profile Posts Renderer with 3-Dots Menu
 function renderProfilePosts(posts) {
   const profContainer = document.getElementById('profPostsContainer');
   if (!profContainer) return;
@@ -193,7 +197,6 @@ function renderProfilePosts(posts) {
   });
 }
 
-// 3-Dots Menu Toggle Function
 function togglePostDropdown(postId) {
   const dropdown = document.getElementById('postDropdown-' + postId);
   if (dropdown) {
@@ -201,7 +204,6 @@ function togglePostDropdown(postId) {
   }
 }
 
-// Add Post to Story Feature
 function addPostToStory(postId) {
   alert('Your post has been successfully added to Story! 🚀🇵🇰');
   const dropdown = document.getElementById('postDropdown-' + postId);
@@ -450,7 +452,6 @@ function renderNotifications() {
 }
 
 function openTringoModal() { document.getElementById('tringoModal')?.classList.remove('hidden'); }
-function closeTornigoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
 function closeTringoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
 
 function askTringoAI() {
@@ -480,4 +481,4 @@ function askTringoAI() {
   }, 600);
 }
 
-function openPostModal() { document.getElementById('
+function openPostModal() { document.getElementById('postModal')?.
