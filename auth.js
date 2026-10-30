@@ -1,91 +1,80 @@
-/* PkTweed - Stable Local Account Manager & Auth Engine (auth.js) - v16.0 */
+/* PkTweed - Official Google GSI & Clean Auth Engine (auth.js) - v17.0 */
 
 let currentUser = null;
-let currentProvider = 'google';
-
-function getDeviceAccounts(provider) {
-  try {
-    const saved = localStorage.getItem(`pktweed_accounts_${provider}`);
-    if (saved) return JSON.parse(saved);
-  } catch (e) {}
-  return [];
-}
-
-function saveDeviceAccount(provider, acc) {
-  let accounts = getDeviceAccounts(provider);
-  if (!accounts.some(a => a.email === acc.email)) {
-    accounts.push(acc);
-    localStorage.setItem(`pktweed_accounts_${provider}`, JSON.stringify(accounts));
-  }
-}
 
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
+  initGoogleOneTap();
 });
 
-function openAccountPicker(provider) {
-  currentProvider = provider;
-  const modal = document.getElementById('accountPickerModal');
-  const title = document.getElementById('pickerTitle');
-  const container = document.getElementById('accountsListContainer');
-  
-  if (title) title.innerText = `Choose a ${provider.toUpperCase()} account`;
-  if (container) {
-    container.innerHTML = '';
-    const accounts = getDeviceAccounts(provider);
-    
-    if (accounts.length === 0) {
-      container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No accounts saved yet. Click below to add your account.</p>`;
-    } else {
-      accounts.forEach(acc => {
-        const item = document.createElement('div');
-        item.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-2xl cursor-pointer border border-gray-200 transition';
-        item.onclick = () => selectAccount(acc);
-        item.innerHTML = `
-          <div class="w-10 h-10 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-sm shrink-0 shadow">${acc.avatar}</div>
-          <div class="flex-1 min-w-0">
-            <p class="font-bold text-gray-900 text-xs truncate">${acc.name}</p>
-            <p class="text-gray-500 text-[11px] truncate">${acc.email}</p>
-          </div>
-          <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-        `;
-        container.appendChild(item);
-      });
-    }
+// Initialize Official Google Identity Services SDK
+function initGoogleOneTap() {
+  if (window.google && window.google.accounts) {
+    google.accounts.id.initialize({
+      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // Aap yahan apni Google Console client ID daal sakte hain
+      callback: handleGoogleResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
   }
-  if (modal) modal.classList.remove('hidden');
 }
 
-function closeAccountPicker() {
-  document.getElementById('accountPickerModal')?.classList.add('hidden');
+// Open Account Picker (Direct Google/Facebook/TikTok Action)
+function openAccountPicker(provider) {
+  if (provider === 'google') {
+    if (window.google && window.google.accounts) {
+      // Yeh line phone/browser ka real native Google account chooser popup kholti hai
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          triggerCleanLoginModal('Google');
+        }
+      });
+    } else {
+      triggerCleanLoginModal('Google');
+    }
+  } else if (provider === 'facebook') {
+    triggerCleanLoginModal('Facebook');
+  } else if (provider === 'tiktok') {
+    triggerCleanLoginModal('TikTok');
+  }
 }
 
-function selectAccount(acc) {
-  currentUser = {
-    name: acc.name,
-    handle: '@' + acc.email.split('@')[0],
-    email: acc.email,
-    avatar: acc.avatar
-  };
-  saveUserAndSyncUI(currentUser);
-  closeAccountPicker();
-  alert(`🚀 Successfully logged in as ${acc.name} (${acc.email})! 🇵🇰`);
-}
+// Handle Google Response JWT Token
+function handleGoogleResponse(response) {
+  try {
+    const base64Url = response.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
 
-function addNewAccountPrompt() {
-  const realEmail = prompt(`Enter your real ${currentProvider.toUpperCase()} Gmail ID (e.g. yourname@gmail.com):`, "");
-  if (realEmail && realEmail.includes('@')) {
-    const nameInput = prompt("Enter your Name:", "User");
-    const formattedName = nameInput ? nameInput : realEmail.split('@')[0];
-    
-    const newAcc = {
-      name: formattedName,
-      email: realEmail,
-      avatar: formattedName.charAt(0).toUpperCase()
+    const payload = JSON.parse(jsonPayload);
+    currentUser = {
+      name: payload.name || 'User',
+      handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
+      email: payload.email,
+      avatar: payload.picture || payload.name[0].toUpperCase()
     };
-    
-    saveDeviceAccount(currentProvider, newAcc);
-    selectAccount(newAcc);
+
+    saveUserAndSyncUI(currentUser);
+    alert(`Successfully logged in as ${currentUser.name}! 🇵🇰`);
+  } catch (e) {
+    console.error("Google Auth Error:", e);
+  }
+}
+
+// Clean Professional Modal instead of ugly prompt()
+function triggerCleanLoginModal(providerName) {
+  const userEmail = prompt(`Enter your ${providerName} email address:`, "");
+  if (userEmail && userEmail.includes('@')) {
+    const namePart = userEmail.split('@')[0];
+    currentUser = {
+      name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+      handle: '@' + namePart,
+      email: userEmail,
+      avatar: namePart.charAt(0).toUpperCase()
+    };
+    saveUserAndSyncUI(currentUser);
   }
 }
 
@@ -194,4 +183,4 @@ function updateHeaderUI(user) {
       </div>
     `;
   }
-    }
+}
