@@ -7,9 +7,6 @@ let notificationsData = [
   { id: 2, type: 'like', text: 'Tringo AI liked your recent PkTweed.', time: '5m ago' }
 ];
 
-if (typeof checkLocalAuth === 'function') checkLocalAuth();
-loadSmartFeed();
-
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof checkLocalAuth === 'function') checkLocalAuth();
   loadSmartFeed();
@@ -401,7 +398,7 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    chatBox.innerHTML += `<div class="bg-sky-950/40 p-2 rounded-xl border border-sky-900 text-sky-300"><strong>Tringo AI:</strong> Systems running smoothly!</div>`;
+    chatBox.innerHTML += `<div class="bg-sky-950/40 p-2 rounded-xl border border-sky-900 text-sky-300"><strong>Tringo AI:</strong> Systems running smoothly! All algorithms and monetization hooks are fully active.</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
   }, 500);
 }
@@ -425,5 +422,5 @@ function processModalMedia(e) {
 function removeModalMedia() {
   activeMedia = null;
   document.getElementById('modalMediaBox')?.classList.add('hidden');
-}
-  
+                  }
+                        
