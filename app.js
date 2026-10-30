@@ -18,6 +18,7 @@ let notificationsData = [
 document.addEventListener('DOMContentLoaded', () => {
   checkLocalAuth();
   loadSmartFeed();
+  checkFollowerMilestone();
 });
 
 function escapeHTML(str) {
@@ -35,6 +36,7 @@ function checkLocalAuth() {
   if (savedUser) {
     currentUser = JSON.parse(savedUser);
     updateHeaderUI(currentUser);
+    hideAuthOverlay();
   } else {
     updateHeaderUI(null);
   }
@@ -45,20 +47,35 @@ function signInWithGoogle() {
     name: 'Makki',
     handle: '@makki',
     email: 'makki@pktweed.pk',
-    avatar: null
+    avatar: 'M'
   };
   localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
   updateHeaderUI(currentUser);
-  alert('Successfully logged in as Makki! 🇵🇰');
-  window.location.reload();
+  hideAuthOverlay();
+  alert('🚀 Google Auth Successful! Tringo AI & Algorithm monitoring active. 🇵🇰');
 }
 
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
   updateHeaderUI(null);
+  
+  const authOverlay = document.getElementById('authOverlay');
+  if (authOverlay) {
+    authOverlay.style.opacity = '1';
+    authOverlay.style.display = 'flex';
+  }
   alert('Successfully logged out!');
-  window.location.reload();
+}
+
+function hideAuthOverlay() {
+  const authOverlay = document.getElementById('authOverlay');
+  if (authOverlay) {
+    authOverlay.style.opacity = '0';
+    setTimeout(() => {
+      authOverlay.style.display = 'none';
+    }, 400);
+  }
 }
 
 function updateHeaderUI(user) {
@@ -73,6 +90,7 @@ function updateHeaderUI(user) {
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="openWalletModal()" class="text-xs bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-extrabold px-3 py-1.5 rounded-full transition flex items-center gap-1"><i class="fas fa-wallet"></i> Wallet</button>
         <button onclick="logoutUser()" class="text-xs bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-full transition">Logout</button>
       </div>
     `;
@@ -114,8 +132,8 @@ function loadSmartFeed() {
   } catch (e) {}
 
   localPosts.sort((a, b) => {
-    const scoreA = (a.likes * 2) + (a.retweets * 3) + (a.comments_count || 0 * 4);
-    const scoreB = (b.likes * 2) + (b.retweets * 3) + (b.comments_count || 0 * 4);
+    const scoreA = (a.likes * 2) + (a.retweets * 3) + ((a.comments_count || 0) * 4);
+    const scoreB = (b.likes * 2) + (b.retweets * 3) + ((b.comments_count || 0) * 4);
     const timeA = new Date(a.created_at || Date.now()).getTime();
     const timeB = new Date(b.created_at || Date.now()).getTime();
     return (scoreB * 10 + timeB) - (scoreA * 10 + timeA);
@@ -159,16 +177,25 @@ function renderPostElement(post, prepend = true) {
       <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
         ${escapeHTML(post.user_name[0])}
       </div>
-      <div class="w-full">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
-            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
-            <span class="text-gray-500 text-sm">· ${timeText}</span>
+      <div class="w-full relative">
+        <div class="absolute right-0 top-0">
+          <button onclick="togglePostDropdown('${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div id="postDropdown-${post.id}" class="hidden absolute right-0 mt-1 w-44 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl z-20 py-1.5 text-xs">
+            <button onclick="sharePost(); togglePostDropdown('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-share-square text-sky-400"></i> Share Post</button>
+            <button onclick="toggleCommentBox('${post.id}'); togglePostDropdown('${post.id}')" class="w-full text-left px-4 py-2 hover:bg-gray-900 text-gray-300 flex items-center gap-2.5"><i class="far fa-comment text-sky-400"></i> Comment</button>
           </div>
+        </div>
+
+        <div class="flex items-center gap-2 pr-8">
+          <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
+          <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+          <span class="text-gray-500 text-sm">· ${timeText}</span>
         </div>
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
         ${mediaHtml}
+        
         <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
           <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">${post.comments_count || 0}</span></button>
           <button onclick="toggleRetweet(this, '${post.id}')" style="transition: all 1s ease-in-out;" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
@@ -269,7 +296,6 @@ function updatePostInStorage(postId, updateFn) {
   } catch (e) {}
 }
 
-// 1-Second Smooth Transition Like Toggle
 function toggleLike(btn, postId) {
   const icon = btn.querySelector('i');
   const cnt = btn.querySelector('.like-cnt');
@@ -298,7 +324,6 @@ function toggleLike(btn, postId) {
   }
 }
 
-// 1-Second Smooth Transition Retweet Toggle
 function toggleRetweet(btn, postId) {
   const cnt = btn.querySelector('.rt-cnt');
   let val = cnt ? parseInt(cnt.innerText || 0) : 0;
@@ -316,7 +341,6 @@ function toggleRetweet(btn, postId) {
   }
 }
 
-// 1-Second Smooth Transition Bookmark Toggle
 function toggleBookmark(btn, pid) {
   const icon = btn.querySelector('i');
   const postElement = document.getElementById('post-' + pid);
@@ -353,6 +377,11 @@ function renderSavedBookmarks() {
 
 function toggleCommentBox(id) {
   document.getElementById('commentSection-' + id)?.classList.toggle('hidden');
+}
+
+function togglePostDropdown(postId) {
+  const dropdown = document.getElementById('postDropdown-' + postId);
+  if (dropdown) dropdown.classList.toggle('hidden');
 }
 
 function addComment(id) {
@@ -447,7 +476,7 @@ function renderNotifications() {
   if (!container) return;
 
   container.innerHTML = `
-    <h2 class="font-extrabold text-lg mb-3 px-2 text-white">Notifications</h2>
+    <h2 class="font-extrabold text-lg mb-3 px-2 text-white">Notifications & Tringo Alerts</h2>
     <div class="space-y-2">
       ${notificationsData.map(n => `
         <div class="bg-gray-900/60 border border-gray-800 p-3.5 rounded-xl flex items-center gap-3">
@@ -463,6 +492,21 @@ function renderNotifications() {
     </div>
   `;
 }
+
+// 10k Followers Milestone & Green Tick Check
+function checkFollowerMilestone() {
+  if (typeof evaluateCreatorMilestone === 'function') {
+    const result = evaluateCreatorMilestone(followersCount);
+    const tickEl = document.getElementById('profileGreenTick');
+    if (result.isVerified && tickEl) {
+      tickEl.classList.remove('hidden');
+    }
+  }
+}
+
+// Wallet Modal Controls
+function openWalletModal() { document.getElementById('walletModal')?.classList.remove('hidden'); }
+function closeWalletModal() { document.getElementById('walletModal')?.classList.add('hidden'); }
 
 function openTringoModal() { document.getElementById('tringoModal')?.classList.remove('hidden'); }
 function closeTringoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
@@ -480,39 +524,4 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: X-Style Algorithm and smooth transitions are active!";
-    const lower = userMsg.toLowerCase();
-    if (lower.includes('post') || lower.includes('tweet')) {
-      response = "Tringo AI: Tap the (+) button below to publish your ranked tweed.";
-    }
-
-    const aiDiv = document.createElement('div');
-    aiDiv.className = 'bg-sky-950/40 p-2 rounded-xl border border-sky-900 text-sky-300';
-    aiDiv.innerHTML = `<strong>Tringo AI:</strong> ${response}`;
-    chatBox.appendChild(aiDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }, 600);
-}
-
-function openPostModal() { document.getElementById('postModal')?.classList.remove('hidden'); }
-function closePostModal() { document.getElementById('postModal')?.classList.add('hidden'); removeModalMedia(); }
-
-function processModalMedia(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    activeMedia = evt.target.result;
-    const box = document.getElementById('modalMediaBox');
-    const img = document.getElementById('modalImgPrev');
-    if (box) box.classList.remove('hidden');
-    if (img) img.src = activeMedia;
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeModalMedia() {
-  activeMedia = null;
-  document.getElementById('modalMediaBox')?.classList.add('hidden');
-        }
-                              
+    let response 
