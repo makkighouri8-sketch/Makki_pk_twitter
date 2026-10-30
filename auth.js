@@ -2,12 +2,18 @@
 
 let currentUser = null;
 
+// Initialize Auth check on page load
+document.addEventListener("DOMContentLoaded", () => {
+  checkLocalAuth();
+});
+
 // Local Session Auth Check
 function checkLocalAuth() {
   const savedUser = localStorage.getItem('pktweed_current_user');
   if (savedUser) {
     currentUser = JSON.parse(savedUser);
     updateHeaderUI(currentUser);
+    hideAuthOverlay();
   } else {
     updateHeaderUI(null);
   }
@@ -19,12 +25,13 @@ function signInWithGoogle() {
     name: 'Makki',
     handle: '@makki',
     email: 'makki@pktweed.pk',
-    avatar: null
+    avatar: 'M'
   };
   localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
   updateHeaderUI(currentUser);
-  alert('Successfully logged in as Makki! 🇵🇰');
-  window.location.reload();
+  hideAuthOverlay();
+  
+  alert('🚀 Google Auth Successful! Tringo AI & Algorithm monitoring active. 🇵🇰');
 }
 
 // Logout Function
@@ -32,8 +39,26 @@ function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
   updateHeaderUI(null);
+  
+  // Show auth overlay again on logout
+  const authOverlay = document.getElementById('authOverlay');
+  if (authOverlay) {
+    authOverlay.style.opacity = '1';
+    authOverlay.style.display = 'flex';
+  }
+  
   alert('Successfully logged out!');
-  window.location.reload();
+}
+
+// Hide Auth Overlay Smoothly
+function hideAuthOverlay() {
+  const authOverlay = document.getElementById('authOverlay');
+  if (authOverlay) {
+    authOverlay.style.opacity = '0';
+    setTimeout(() => {
+      authOverlay.style.display = 'none';
+    }, 400);
+  }
 }
 
 // Update Header UI Safely
@@ -65,4 +90,3 @@ function updateHeaderUI(user) {
     `;
   }
 }
-
