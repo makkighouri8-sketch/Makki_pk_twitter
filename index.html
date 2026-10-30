@@ -10,20 +10,15 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <style>
-    /* PK Twitter Pro - Ultimate Clean Stylesheet */
+    /* Freelancer Pro Light Theme & Dark App Stylesheet */
     html, body {
       background-color: #000000 !important;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100vh;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      touch-action: manipulation;
+      margin: 0; padding: 0; width: 100%; min-height: 100vh;
+      overflow-x: hidden; overflow-y: auto;
+      -webkit-overflow-scrolling: touch; touch-action: manipulation;
       -webkit-tap-highlight-color: transparent !important;
     }
 
@@ -35,7 +30,6 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #000000; }
     ::-webkit-scrollbar-thumb { background: #222222; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #333333; }
     * { -ms-overflow-style: none; scrollbar-width: none; }
 
     .page-view { display: block; animation: fadeIn 0.25s ease-in-out; }
@@ -52,10 +46,17 @@
       background-color: rgba(0, 0, 0, 0.85) !important;
     }
 
-    #tringoModal > div, #postModal > div, #walletModal > div, #authOverlay > div {
-      background: rgba(10, 10, 10, 0.95);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+    /* Neon White Waves Pulse Animation for (+) Button */
+    @keyframes neonWhitePulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8), 0 0 0 0 rgba(0, 240, 255, 0.6); }
+      70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0), 0 0 0 25px rgba(0, 240, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 0 0 0 rgba(0, 240, 255, 0); }
+    }
+    .neon-waves-btn { animation: neonWhitePulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+
+    #tringoModal > div, #postModal > div, #walletModal > div, #accountPickerModal > div {
+      background: rgba(10, 10, 10, 0.98);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.15);
       animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -66,16 +67,8 @@
     }
 
     ::selection { background: #0ea5e9; color: #000000; }
-
-    button, article button {
-      outline: none !important;
-      -webkit-tap-highlight-color: transparent !important;
-      cursor: pointer;
-      transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-    }
-
-    button:focus, article button:focus { outline: none !important; box-shadow: none !important; }
-    button:active, article button:active { transform: scale(0.96); }
+    button, article button { outline: none !important; cursor: pointer; transition: transform 0.1s ease, background-color 0.2s ease; }
+    button:active { transform: scale(0.96); }
 
     .filter-normal { filter: none; }
     .filter-vibrant { filter: saturate(1.8) contrast(1.1); }
@@ -85,22 +78,24 @@
 </head>
 <body class="bg-black text-white antialiased min-h-screen pb-24 select-none overflow-x-hidden">
 
-  <!-- REAL GOOGLE AUTH OVERLAY -->
-  <div id="authOverlay" class="fixed inset-0 bg-black z-[999] flex flex-col justify-center items-center p-6 text-center transition-opacity duration-500">
-    <div class="max-w-md w-full bg-gray-950 border border-gray-800 rounded-3xl p-6 shadow-2xl relative text-left">
+  <!-- FREELANCER STYLE PROFESSIONAL LOGIN OVERLAY -->
+  <div id="authOverlay" class="fixed inset-0 bg-white text-gray-900 z-[999] flex flex-col justify-center items-center p-6 text-center transition-opacity duration-500">
+    <div class="max-w-md w-full bg-white p-6 relative text-left">
       
       <!-- Brand Logo Header -->
       <div class="text-center mb-6">
-        <div class="w-16 h-16 rounded-full bg-black border-2 border-sky-400 mx-auto flex items-center justify-center shadow-lg mb-2">
-          <svg class="w-8 h-8 text-[#00f3ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <svg class="w-9 h-9 text-sky-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          </svg>
+          <span class="text-2xl font-bold tracking-tight text-gray-900">pktweed</span>
         </div>
-        <h1 class="text-2xl font-extrabold text-white">Welcome back to <span class="text-[#00f3ff]">PkTweed</span></h1>
-        <p class="text-gray-400 text-xs mt-1">Pakistan's Global Social Network & Creator Platform 🇵🇰</p>
+        <h2 class="text-2xl font-bold text-gray-900">Welcome back</h2>
       </div>
 
-      <!-- Real Google Button Container / Custom Button Trigger -->
+      <!-- Social Login Buttons (Google, Facebook, TikTok) -->
       <div class="space-y-3">
-        <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-3 px-4 rounded-xl hover:bg-gray-200 transition shadow text-sm cursor-pointer">
+        <button onclick="openAccountPicker('google')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl hover:bg-gray-50 transition shadow-sm text-sm cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -110,38 +105,67 @@
           Continue with Google
         </button>
 
-        <button onclick="signInWithFacebook()" class="w-full flex items-center justify-center gap-3 bg-[#1877F2] text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-600 transition shadow text-sm cursor-pointer">
-          <i class="fab fa-facebook-f text-lg"></i>
+        <button onclick="openAccountPicker('facebook')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl hover:bg-gray-50 transition shadow-sm text-sm cursor-pointer">
+          <i class="fab fa-facebook-f text-lg text-blue-600"></i>
           Continue with Facebook
+        </button>
+
+        <button onclick="openAccountPicker('tiktok')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl hover:bg-gray-50 transition shadow-sm text-sm cursor-pointer">
+          <i class="fab fa-tiktok text-lg text-black"></i>
+          Continue with TikTok
         </button>
       </div>
 
-      <!-- Hidden Google Official Anchor Element for Real Popup Trigger -->
+      <!-- Hidden Google Official Anchor Element -->
       <div id="googleBtnHidden" class="hidden"></div>
 
       <!-- OR Divider -->
-      <div class="flex items-center my-4 text-gray-500 text-xs">
-        <div class="flex-1 border-t border-gray-800"></div>
-        <span class="px-3">OR</span>
-        <div class="flex-1 border-t border-gray-800"></div>
+      <div class="flex items-center my-5 text-gray-400 text-xs">
+        <div class="flex-1 border-t border-gray-300"></div>
+        <span class="px-4 font-semibold text-gray-500">OR</span>
+        <div class="flex-1 border-t border-gray-300"></div>
       </div>
 
       <!-- Email & Password Form -->
-      <div class="space-y-3">
-        <input type="text" id="authEmail" placeholder="Email or Username" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-sky-500">
-        <input type="password" id="authPassword" placeholder="Password" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-sky-500">
+      <div class="space-y-4">
+        <input type="text" id="authEmail" placeholder="Email or Username" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-sky-500 shadow-sm">
         
-        <div class="text-right">
-          <a href="#" onclick="alert('Password reset link sent to your email!')" class="text-xs text-sky-400 hover:underline">Forgot Password?</a>
+        <div class="relative">
+          <input type="password" id="authPassword" placeholder="Password" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-sky-500 shadow-sm pr-10">
+          <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+            <i id="eyeIcon" class="far fa-eye-slash text-base"></i>
+          </button>
+        </div>
+        
+        <div class="text-left">
+          <a href="#" onclick="alert('Password reset link sent to your email!')" class="text-xs font-semibold text-sky-600 hover:underline">Forgot Password?</a>
         </div>
 
-        <button onclick="handleEmailLogin()" class="w-full bg-sky-500 hover:bg-sky-400 text-black font-bold py-3 rounded-xl text-sm transition shadow-lg cursor-pointer">Log in</button>
+        <button onclick="handleEmailLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-md cursor-pointer">Log in</button>
       </div>
 
       <!-- Sign up footer -->
-      <div class="text-center mt-4 text-xs text-gray-400">
-        Don't have an account? <span onclick="handleSignUp()" class="text-sky-400 font-bold cursor-pointer hover:underline">Sign up</span>
+      <div class="text-center mt-5 text-xs text-gray-600">
+        Don't have an account? <span onclick="openAccountPicker('google')" class="text-sky-600 font-bold cursor-pointer hover:underline">Sign up</span>
       </div>
+    </div>
+  </div>
+
+  <!-- MULTI-ACCOUNT SELECTOR POPUP MODAL -->
+  <div id="accountPickerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] hidden flex justify-center items-center p-4">
+    <div class="bg-white text-gray-900 border border-gray-200 w-full max-w-sm rounded-3xl p-5 shadow-2xl relative text-left">
+      <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-3">
+        <h3 id="pickerTitle" class="font-extrabold text-sm text-gray-900 flex items-center gap-2">Choose an account</h3>
+        <button onclick="closeAccountPicker()" class="text-gray-400 hover:text-gray-700"><i class="fas fa-times text-base"></i></button>
+      </div>
+      <p class="text-xs text-gray-500 mb-3">Select your account to continue to PkTweed:</p>
+      
+      <!-- Dynamic Account List Container -->
+      <div id="accountsListContainer" class="space-y-2 max-h-60 overflow-y-auto mb-3"></div>
+
+      <button onclick="addNewAccountPrompt()" class="w-full border border-dashed border-gray-300 hover:border-sky-500 text-sky-600 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+        <i class="fas fa-plus"></i> Use another account
+      </button>
     </div>
   </div>
 
@@ -227,8 +251,11 @@
 
     </main>
 
-    <!-- FLOATING (+) ACTION BUTTON -->
-    <button onclick="openPostModal()" class="fixed bottom-20 right-5 sm:right-[calc(50%-16rem)] z-40 w-14 h-14 bg-sky-500 hover:bg-sky-400 active:scale-95 rounded-full text-black font-extrabold flex items-center justify-center shadow-2xl transition-transform border border-sky-300">
+    <!-- HIDDEN REAL CAMERA INPUT (Triggers Device Camera Directly) -->
+    <input type="file" id="directCameraInput" accept="image/*,video/*" capture="environment" class="hidden" onchange="handleDirectCameraCapture(event)">
+
+    <!-- FLOATING (+) ACTION BUTTON WITH NEON WHITE WAVES -->
+    <button onclick="triggerDirectCamera()" class="fixed bottom-20 right-5 sm:right-[calc(50%-16rem)] z-40 w-14 h-14 bg-sky-500 hover:bg-sky-400 rounded-full text-black font-extrabold flex items-center justify-center shadow-2xl neon-waves-btn transition-transform active:scale-95 border border-white/80">
       <i class="fas fa-plus text-2xl"></i>
     </button>
 
@@ -268,47 +295,8 @@
       </div>
     </div>
 
-    <!-- POST MODAL -->
-    <div id="postModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
-      <div class="bg-gray-950 border border-gray-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl">
-        <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
-          <h3 class="font-extrabold text-base text-white flex items-center gap-2"><i class="fas fa-plus-circle text-sky-400"></i> Compose PkTweed</h3>
-          <button onclick="closePostModal()" class="text-gray-400 hover:text-white p-1 text-lg"><i class="fas fa-times"></i></button>
-        </div>
-
-        <div class="flex gap-3">
-          <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black">M</div>
-          <textarea id="modalPostInput" class="w-full bg-transparent text-white text-base focus:outline-none resize-none placeholder-gray-600" rows="3" placeholder="What is happening?!"></textarea>
-        </div>
-
-        <div id="modalMediaBox" class="hidden relative my-3">
-          <img id="modalImgPrev" class="w-full max-h-60 object-cover rounded-2xl border border-gray-800 filter-normal" />
-          <div class="flex gap-2 mt-2 overflow-x-auto pb-1">
-            <button onclick="applyCameraFilter('normal')" class="text-[10px] bg-gray-800 px-3 py-1 rounded-full text-white shrink-0">Normal</button>
-            <button onclick="applyCameraFilter('vibrant')" class="text-[10px] bg-sky-900 px-3 py-1 rounded-full text-sky-300 shrink-0">Vibrant ✨</button>
-            <button onclick="applyCameraFilter('cyber')" class="text-[10px] bg-cyan-900 px-3 py-1 rounded-full text-cyan-300 shrink-0">Cyber Neon ⚡</button>
-            <button onclick="applyCameraFilter('mono')" class="text-[10px] bg-gray-800 px-3 py-1 rounded-full text-gray-300 shrink-0">Mono 🎞️</button>
-          </div>
-          <button onclick="removeModalMedia()" class="absolute top-2 right-2 bg-black/80 hover:bg-black rounded-full w-8 h-8 flex items-center justify-center text-white text-sm border border-gray-700"><i class="fas fa-times"></i></button>
-        </div>
-
-        <div class="flex justify-between items-center border-t border-gray-800/80 pt-4 mt-3">
-          <div class="flex gap-2">
-            <label class="hover:bg-sky-500/10 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border border-gray-800 text-sky-400" title="Upload Media">
-              <i class="far fa-image"></i>
-              <input type="file" accept="image/*" class="hidden" onchange="processModalMedia(event)">
-            </label>
-            <button onclick="openTikTokCamera()" class="hover:bg-pink-500/10 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition border border-gray-800 text-pink-400" title="TikTok Camera">
-              <i class="fas fa-camera"></i>
-            </button>
-          </div>
-          <button onclick="createNewModalPost()" class="bg-sky-500 hover:bg-sky-400 font-bold px-6 py-2 rounded-full text-sm text-black transition shadow-lg">Tweed</button>
-        </div>
-      </div>
-    </div>
-
     <!-- FIXED BOTTOM NAV BAR -->
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl border-t border-gray-800 flex justify-around items-center py-2 text-xl text-gray-400 z-40">
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl border-t border-gray-800 flex justify-around items-center py-2.5 text-xl text-gray-400 z-40 bg-black/90 backdrop-blur-md">
       <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition p-2"><i class="fas fa-home"></i></button>
       <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition p-2"><i class="fas fa-search"></i></button>
       
@@ -324,9 +312,22 @@
 
   </div>
 
-  <script src="auth.js?v=3.0"></script>
-  <script src="algorithm.js?v=3.0"></script>
-  <script src="components.js?v=3.0"></script>
-  <script src="app.js?v=3.0"></script>
+  <script>
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('authPassword');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+      }
+    }
+  </script>
+  <script src="auth.js?v=10.0"></script>
+  <script src="algorithm.js?v=10.0"></script>
+  <script src="components.js?v=10.0"></script>
+  <script src="app.js?v=10.0"></script>
 </body>
 </html>
