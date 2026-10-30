@@ -1,101 +1,186 @@
-/* PkTweed - Dynamic Local Account Manager Engine (auth.js) - v13.0 */
+/* PkTweed - Supabase Production Auth Engine (auth.js) - v15.0 */
+
+// 1. Supabase Initialization (Apni project URL aur anon Key yahan replace karein)
+const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 let currentUser = null;
 let currentProvider = 'google';
 
-// Load stored accounts from browser localStorage or start fresh
-function getDeviceAccounts(provider) {
-  try {
-    const saved = localStorage.getItem(`pktweed_accounts_${provider}`);
-    if (saved) return JSON.parse(saved);
-  } catch (e) {}
-  
-  // Default empty or initial user account list
-  return [];
-}
-
-function saveDeviceAccount(provider, acc) {
-  let accounts = getDeviceAccounts(provider);
-  // Check if already exists
-  if (!accounts.some(a => a.email === acc.email)) {
-    accounts.push(acc);
-    localStorage.setItem(`pktweed_accounts_${provider}`, JSON.stringify(accounts));
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  checkLocalAuth();
+document.addEventListener("DOMContentLoaded", async () => {
+  await checkSession();
 });
 
-// Open Account Picker Modal showing real added accounts
-function openAccountPicker(provider) {
-  currentProvider = provider;
-  const modal = document.getElementById('accountPickerModal');
-  const title = document.getElementById('pickerTitle');
-  const container = document.getElementById('accountsListContainer');
-  
-  if (title) title.innerText = `Choose a ${provider.toUpperCase()} account`;
-  if (container) {
-    container.innerHTML = '';
-    const accounts = getDeviceAccounts(provider);
-    
-    if (accounts.length === 0) {
-      container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No accounts saved yet. Click below to add your real account.</p>`;
-    } else {
-      accounts.forEach(acc => {
-        const item = document.createElement('div');
-        item.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-2xl cursor-pointer border border-gray-200 transition';
-        item.onclick = () => selectAccount(acc);
-        item.innerHTML = `
-          <div class="w-10 h-10 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-sm shrink-0 shadow">${acc.avatar}</div>
-          <div class="flex-1 min-w-0">
-            <p class="font-bold text-gray-900 text-xs truncate">${acc.name}</p>
-            <p class="text-gray-500 text-[11px] truncate">${acc.email}</p>
-          </div>
-          <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-        `;
-        container.appendChild(item);
-      });
-    }
+// Real Session Check & Event Listener
+async function checkSession() {
+  if (!supabase) {
+    checkLocalAuth();
+    return;
   }
-  if (modal) modal.classList.remove('hidden');
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    syncUserData(session.user);
+    hideAuthOverlay();
+  } else {
+    updateHeaderUI(null);
+  }
+
+  // Real-time authentication listener
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      syncUserData(session.user);
+      hideAuthOverlay();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      localStorage.removeItem('pktweed_current_user');
+      updateHeaderUI(null);
+      showAuthOverlay();
+    }
+  });
+}
+
+// Handle Google, Facebook, and TikTok Button Actions
+async function openAccountPicker(provider) {
+  currentProvider = provider;
+  if (!supabase) {
+    // Fallback modal agar Supabase credentials missing hon
+    document.getElementById('accountPickerModal')?.classList.remove('hidden');
+    return;
+  }
+
+  if (provider === 'google') {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) alert("Google Login Error: " + error.message);
+  } else if (provider === 'facebook') {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) alert("Facebook Login Error: " + error.message);
+  } else if (provider === 'tiktok') {
+    document.getElementById('customAccountModal')?.classList.remove('hidden');
+  }
 }
 
 function closeAccountPicker() {
   document.getElementById('accountPickerModal')?.classList.add('hidden');
 }
 
-function selectAccount(acc) {
-  currentUser = {
-    name: acc.name,
-    handle: '@' + acc.email.split('@')[0],
-    email: acc.email,
-    avatar: acc.avatar
-  };
-  saveUserAndSyncUI(currentUser);
-  closeAccountPicker();
-  alert(`🚀 Successfully logged in as ${acc.name} (${acc.email})! 🇵🇰`);
-}
+// Real Email & Password Login
+async function handleEmailLogin() {
+  const emailInput = document.getElementById('authEmail')?.value.trim();
+  const passwordInput = document.getElementById('authPassword')?.value;
 
-// TikTok / Google style prompt to add real account
-function addNewAccountPrompt() {
-  const realEmail = prompt(`Apni real ${currentProvider.toUpperCase()} Gmail ID enter karein (e.g. yourname@gmail.com):`, "");
-  if (realEmail && realEmail.includes('@')) {
-    const nameInput = prompt("Apna naam enter karein:", "My Name");
-    const formattedName = nameInput ? nameInput : realEmail.split('@')[0];
-    
-    const newAcc = {
-      name: formattedName,
-      email: realEmail,
-      avatar: formattedName.charAt(0).toUpperCase()
+  if (!emailInput || !passwordInput) {
+    alert('Please enter both Email and Password!');
+    return;
+  }
+
+  if (supabase) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailInput,
+      password: passwordInput,
+    });
+
+    if (error) {
+      alert("Login Error: " + error.message);
+    } else {
+      syncUserData(data.user);
+      hideAuthOverlay();
+    }
+  } else {
+    const namePart = emailInput.split('@')[0];
+    currentUser = {
+      name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+      handle: '@' + namePart,
+      email: emailInput,
+      avatar: namePart.charAt(0).toUpperCase()
     };
-    
-    saveDeviceAccount(currentProvider, newAcc);
-    selectAccount(newAcc);
+    saveUserAndSyncUI(currentUser);
   }
 }
 
-// Local Session Auth Check
+// Real Sign Up
+async function handleSignUp() {
+  const emailInput = document.getElementById('authEmail')?.value.trim();
+  const passwordInput = document.getElementById('authPassword')?.value;
+
+  if (!emailInput || !passwordInput) {
+    alert('Please enter Email and Password to Sign Up!');
+    return;
+  }
+
+  if (supabase) {
+    const { data, error } = await supabase.auth.signUp({
+      email: emailInput,
+      password: passwordInput,
+    });
+
+    if (error) {
+      alert("Sign Up Error: " + error.message);
+    } else {
+      alert("Verification link sent to your email! Check your inbox.");
+    }
+  } else {
+    handleEmailLogin();
+  }
+}
+
+// Real Password Reset Link Request
+async function handleForgotPassword() {
+  const emailInput = prompt("Enter your Gmail for Password Reset link:");
+  if (!emailInput || !emailInput.includes('@')) {
+    alert("Valid Gmail address required!");
+    return;
+  }
+
+  if (supabase) {
+    const { error } = await supabase.auth.resetPasswordForEmail(emailInput, {
+      redirectTo: window.location.origin,
+    });
+
+    if (error) {
+      alert("Password Reset Error: " + error.message);
+    } else {
+      alert(`Password reset link sent to ${emailInput}! Check your Gmail inbox.`);
+    }
+  } else {
+    alert(`Reset link simulated for ${emailInput}!`);
+  }
+}
+
+// Data Synchronizer
+function syncUserData(user) {
+  const emailPart = user.email ? user.email.split('@')[0] : 'user';
+  currentUser = {
+    id: user.id,
+    name: user.user_metadata?.full_name || emailPart.charAt(0).toUpperCase() + emailPart.slice(1),
+    handle: '@' + emailPart,
+    email: user.email,
+    avatar: user.user_metadata?.avatar_url || emailPart.charAt(0).toUpperCase()
+  };
+
+  saveUserAndSyncUI(currentUser);
+}
+
+function saveUserAndSyncUI(user) {
+  localStorage.setItem('pktweed_current_user', JSON.stringify(user));
+  updateHeaderUI(user);
+
+  const nameDisp = document.getElementById('profileNameDisplay');
+  const handleDisp = document.getElementById('profileHandleDisplay');
+  if (nameDisp) nameDisp.innerText = user.name;
+  if (handleDisp) handleDisp.innerText = user.handle;
+
+  hideAuthOverlay();
+}
+
 function checkLocalAuth() {
   const savedUser = localStorage.getItem('pktweed_current_user');
   if (savedUser) {
@@ -112,42 +197,22 @@ function checkLocalAuth() {
   }
 }
 
-function saveUserAndSyncUI(user) {
-  localStorage.setItem('pktweed_current_user', JSON.stringify(user));
-  updateHeaderUI(user);
-  
-  const nameDisp = document.getElementById('profileNameDisplay');
-  const handleDisp = document.getElementById('profileHandleDisplay');
-  if (nameDisp) nameDisp.innerText = user.name;
-  if (handleDisp) handleDisp.innerText = user.handle;
-  
-  hideAuthOverlay();
-}
-
-function handleEmailLogin() {
-  const emailInput = document.getElementById('authEmail')?.value || '';
-  if (!emailInput.trim()) {
-    alert('Please enter your email or username!');
-    return;
+// Logout Execution
+async function logoutUser() {
+  if (supabase) {
+    await supabase.auth.signOut();
   }
-  const namePart = emailInput.split('@')[0];
-  currentUser = {
-    name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
-    handle: '@' + namePart,
-    email: emailInput,
-    avatar: namePart.charAt(0).toUpperCase()
-  };
-  saveUserAndSyncUI(currentUser);
-}
-
-function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
   updateHeaderUI(null);
+  showAuthOverlay();
+}
+
+function showAuthOverlay() {
   const authOverlay = document.getElementById('authOverlay');
   if (authOverlay) {
-    authOverlay.style.opacity = '1';
     authOverlay.style.display = 'flex';
+    authOverlay.style.opacity = '1';
   }
 }
 
@@ -191,3 +256,4 @@ function updateHeaderUI(user) {
     `;
   }
 }
+  
