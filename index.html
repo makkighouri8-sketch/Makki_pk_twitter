@@ -6,8 +6,11 @@
   <title>PkTweed 🇵🇰</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <!-- Official Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Supabase JS SDK Loaded First for Instant Availability -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     /* Freelancer Pro Light Theme & Dark App Stylesheet */
@@ -137,16 +140,12 @@
           </button>
         </div>
         
-        <div class="text-left">
-          <a href="#" onclick="alert('Password reset link sent to your email!')" class="text-xs font-semibold text-sky-600 hover:underline">Forgot Password?</a>
+        <div class="text-left flex justify-between items-center">
+          <a href="#" onclick="handleForgotPassword()" class="text-xs font-semibold text-sky-600 hover:underline">Forgot Password?</a>
+          <a href="#" onclick="handleSignUp()" class="text-xs font-semibold text-gray-600 hover:underline">Sign up</a>
         </div>
 
         <button onclick="handleEmailLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-md cursor-pointer">Log in</button>
-      </div>
-
-      <!-- Sign up footer -->
-      <div class="text-center mt-5 text-xs text-gray-600">
-        Don't have an account? <span onclick="openAccountPicker('google')" class="text-sky-600 font-bold cursor-pointer hover:underline">Sign up</span>
       </div>
     </div>
   </div>
@@ -325,10 +324,12 @@
       }
     }
   </script>
-  <script src="auth.js?v=10.0"></script>
-  <script src="algorithm.js?v=10.0"></script>
-  <script src="components.js?v=10.0"></script>
-  <script src="app.js?v=10.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- JavaScript Engines in Correct Execution Order -->
+  <script src="auth.js?v=11.0"></script>
+  <script src="algorithm.js?v=11.0"></script>
+  <script src="components.js?v=11.0"></script>
+  <script src="app.js?v=11.0"></script>
 </body>
-</html>
+      </html>
+      
