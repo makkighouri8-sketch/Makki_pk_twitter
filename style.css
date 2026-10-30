@@ -1,122 +1,361 @@
-/* PK Twitter Pro - Ultimate Clean Stylesheet (Fixed Touch & Focus States) */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PkTweed 🇵🇰</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* PK Twitter Pro - Ultimate Clean Stylesheet (Fixed Touch & Focus States) */
+    html, body {
+      background-color: #000000 !important;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent !important;
+    }
 
-html, body {
-  background-color: #000000 !important;
-  color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  user-select: none;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent !important;
-}
+    /* Hide Default Webkit Focus Rings on Mobile Taps */
+    *, *:focus, *:active {
+      -webkit-tap-highlight-color: transparent !important;
+      outline: none !important;
+    }
 
-/* Hide Default Webkit Focus Rings on Mobile Taps */
-*, *:focus, *:active {
-  -webkit-tap-highlight-color: transparent !important;
-  outline: none !important;
-}
+    /* Custom Sleek Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
 
-/* Custom Sleek Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-}
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
 
-::-webkit-scrollbar-track {
-  background: #000000;
-}
+    ::-webkit-scrollbar-thumb {
+      background: #222222;
+      border-radius: 4px;
+    }
 
-::-webkit-scrollbar-thumb {
-  background: #222222;
-  border-radius: 4px;
-}
+    ::-webkit-scrollbar-thumb:hover {
+      background: #333333;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #333333;
-}
+    /* Hide Scrollbar for Firefox & IE */
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
-/* Hide Scrollbar for Firefox & IE */
-* {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+    /* Page Transitions & Animations */
+    .page-view {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
 
-/* Page Transitions & Animations */
-.page-view {
-  display: block;
-  animation: fadeIn 0.25s ease-in-out;
-}
+    .page-view.hidden {
+      display: none;
+    }
 
-.page-view.hidden {
-  display: none;
-}
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+    /* Glassmorphism Header & Navigation */
+    header, nav {
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      background-color: rgba(0, 0, 0, 0.85) !important;
+    }
 
-/* Glassmorphism Header & Navigation */
-header, nav {
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  background-color: rgba(0, 0, 0, 0.85) !important;
-}
+    /* Modals Glass Glow & Pop Animation */
+    #tringoModal > div, #postModal > div, #walletModal > div, #authOverlay > div {
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.15);
+      animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-/* Modals Glass Glow & Pop Animation */
-#tringoModal > div, #postModal > div {
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.15);
-  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
+    @keyframes modalPop {
+      0% {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
 
-@keyframes modalPop {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
+    /* Custom Selection Highlight Color */
+    ::selection {
+      background: #0ea5e9;
+      color: #000000;
+    }
 
-/* Custom Selection Highlight Color */
-::selection {
-  background: #0ea5e9;
-  color: #000000;
-}
+    /* Prevent accidental browser focus color changes on action buttons */
+    button, article button {
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
 
-/* Prevent accidental browser focus color changes on action buttons */
-button, article button {
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  cursor: pointer;
-  transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
+    button:focus, article button:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
 
-button:focus, article button:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
+    button:active, article button:active {
+      transform: scale(0.96);
+    }
 
-button:active, article button:active {
-  transform: scale(0.96);
-}
+    article {
+      transition: background-color 0.2s ease;
+    }
 
-article {
-  transition: background-color 0.2s ease;
-}
+    /* TikTok Filter Previews */
+    .filter-normal { filter: none; }
+    .filter-vibrant { filter: saturate(1.8) contrast(1.1); }
+    .filter-cyber { filter: hue-rotate(180deg) saturate(2); }
+    .filter-mono { filter: grayscale(100%) contrast(1.2); }
+  </style>
+</head>
+<body class="bg-black text-white antialiased min-h-screen pb-24 select-none overflow-x-hidden">
+
+  <!-- GOOGLE AUTH LOGIN SCREEN (Entry Point Overlay) -->
+  <div id="authOverlay" class="fixed inset-0 bg-black z-[999] flex flex-col justify-center items-center p-6 text-center transition-opacity duration-500">
+    <div class="max-w-md w-full border border-gray-800 rounded-3xl p-8 shadow-2xl relative">
+      <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full bg-black border-4 border-gray-800 flex items-center justify-center shadow-xl">
+        <svg class="w-10 h-10 text-[#00f3ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      </div>
+      <h1 class="text-2xl font-extrabold mt-6 text-white">Welcome to <span class="text-[#00f3ff]">PkTweed</span></h1>
+      <p class="text-gray-400 text-sm mt-2">Pakistan's Global Social Network & Creator Earning Platform 🇵🇰</p>
+      
+      <div class="mt-8">
+        <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-3.5 px-6 rounded-2xl hover:bg-gray-200 transition shadow-lg">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          Continue with Google
+        </button>
+      </div>
+      <p class="text-xs text-gray-500 mt-6">🔒 Secured & Monitored by Tringo AI Engine</p>
+    </div>
+  </div>
+
+  <!-- Main Responsive Container -->
+  <div class="w-full max-w-xl mx-auto border-x border-gray-800 min-h-screen flex flex-col relative bg-black">
+    
+    <!-- STATIC HEADER -->
+    <header id="navbarHeader" class="sticky top-0 px-4 py-3 flex justify-between items-center z-50 shadow-md min-h-[56px] w-full border-b border-gray-800">
+      <div class="flex items-center gap-2 shrink-0">
+        <div id="headerUserAvatar" class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
+        <span id="headerUserName" class="text-white font-semibold text-sm whitespace-nowrap">Makki</span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap">My Profile</button>
+        <button onclick="openWalletModal()" class="text-xs bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-extrabold px-3 py-1.5 rounded-full transition whitespace-nowrap flex items-center gap-1"><i class="fas fa-wallet"></i> Wallet</button>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT SECTIONS -->
+    <main class="flex-1 w-full pb-20">
+      
+      <!-- FEED PAGE -->
+      <section id="pageFeed" class="page-view block w-full">
+        <div id="timeline" class="divide-y divide-gray-800/80 w-full">
+          
+          <article class="p-4 hover:bg-gray-950/40 transition post-item w-full" id="post-1">
+            <div class="flex gap-3 w-full">
+              <div class="w-10 h-10 rounded-full bg-sky-500 shrink-0 flex items-center justify-center font-bold text-black">P</div>
+              <div class="w-full min-w-0 flex-1">
+                <div class="flex justify-between items-center gap-2 w-full">
+                  <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                    <span class="font-bold text-white text-sm">PkTweed Official</span>
+                    <i class="fas fa-check-circle text-sky-400 text-xs shrink-0"></i>
+                    <span class="text-gray-500 text-xs shrink-0">· Just now</span>
+                  </div>
+                  <button onclick="toggleFollow(this)" id="followBtn-1" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3.5 py-1 rounded-full transition shrink-0">Follow</button>
+                </div>
+                <p class="text-white mt-2 text-sm leading-relaxed">Welcome to PkTweed! Pakistan's global social network with Tringo AI monitoring, TikTok-style camera filters, and creator earnings is live! 🇵🇰✨</p>
+                
+                <div class="flex justify-between text-gray-500 text-sm mt-3 w-full pr-2">
+                  <button onclick="toggleCommentBox('1')" class="hover:text-sky-400 flex items-center gap-1.5 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-1">0</span></button>
+                  <button onclick="toggleRetweet(this, '1')" class="hover:text-green-500 flex items-center gap-1.5 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">2</span></button>
+                  <button onclick="toggleLike(this, '1')" class="hover:text-pink-500 flex items-center gap-1.5 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">15</span></button>
+                  <button onclick="toggleBookmark(this, '1')" class="hover:text-sky-400 text-gray-500"><i class="far fa-bookmark"></i></button>
+                  <button onclick="sharePost('1')" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
+                </div>
+
+                <div id="commentSection-1" class="hidden mt-3 pt-3 border-t border-gray-800/60 w-full">
+                  <div class="flex gap-2 mb-2 w-full">
+                    <input type="text" id="cm-input-1" placeholder="Write a reply..." class="w-full bg-gray-900 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
+                    <button onclick="addComment('1')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full shrink-0 hover:bg-sky-400 transition">Reply</button>
+                  </div>
+                  <div id="cm-list-1" class="space-y-1.5 text-xs text-gray-300 w-full"></div>
+                </div>
+
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- EXPLORE PAGE -->
+      <section id="pageExplore" class="page-view hidden p-4 w-full">
+        <div class="relative mb-4">
+          <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
+          <input type="text" placeholder="Search PkTweed..." class="w-full bg-gray-900 border border-gray-800 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-sky-500 text-sm">
+        </div>
+        <h2 class="font-extrabold text-lg mb-3">Trending in Pakistan</h2>
+        <div class="space-y-3">
+          <div class="bg-gray-900/60 border border-gray-800 p-3.5 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="text-xs text-gray-500">Technology · Trending</p>
+              <p class="font-bold text-sm text-sky-400">#PkTweedGlobal</p>
+              <p class="text-xs text-gray-400 mt-0.5">128.4K Tweeds</p>
+            </div>
+            <span class="text-sky-400 text-xl font-bold">▲</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS PAGE -->
+      <section id="pageNotif" class="page-view hidden p-4 w-full">
+        <h2 class="font-extrabold text-lg mb-3">Notifications & Tringo Alerts</h2>
+        <div id="notifList" class="space-y-3">
+          <div class="bg-gray-900/60 border border-gray-800 p-3.5 rounded-xl flex items-start gap-3">
+            <span class="text-sky-400 text-lg mt-0.5">▲</span>
+            <div>
+              <p class="text-sm font-bold text-white">Tringo AI Security Check</p>
+              <p class="text-xs text-gray-400 mt-1">System running smoothly. Your account is fully secured under cloud sync.</p>
+              <span class="text-[10px] text-gray-500 mt-2 block">Just now</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE PAGE -->
+      <section id="pageProfile" class="page-view hidden w-full">
+        <div class="h-32 bg-gradient-to-r from-sky-500 to-blue-700"></div>
+        <div class="px-4 pb-4 border-b border-gray-800 relative">
+          <div class="flex justify-between items-end">
+            <div id="profileAvatarBig" class="w-20 h-20 rounded-full bg-sky-500 border-4 border-black -mt-10 flex items-center justify-center font-extrabold text-2xl text-black shadow-xl">M</div>
+            <button onclick="alert('Profile Updated Successfully!')" class="border border-gray-700 hover:bg-gray-900 font-bold px-4 py-1.5 rounded-full text-sm transition">Edit profile</button>
+          </div>
+          <div class="mt-3 flex items-center gap-1.5">
+            <h2 id="profileNameDisplay" class="text-xl font-extrabold">Makki</h2>
+            <span id="profileGreenTick" class="hidden"><i class="fas fa-check-circle text-sky-400 text-base" title="Verified Creator (10k+)"></i></span>
+          </div>
+          <p id="profileHandleDisplay" class="text-gray-500 text-sm">@makki</p>
+          <p class="text-sm mt-3 text-gray-200">Full Stack Developer & Tech Entrepreneur from Multan 🇵🇰</p>
+          <div class="flex gap-6 mt-3 text-sm text-gray-500">
+            <span><strong class="text-white" id="profileFollowingCount">320</strong> Following</span>
+            <span><strong class="text-white" id="profileFollowersCount">2500</strong> Followers</span>
+          </div>
+        </div>
+
+        <div class="flex border-b border-gray-800 text-sm font-bold text-center">
+          <button onclick="switchProfileTab('myPosts')" id="pTabPosts" class="flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold">Tweeds</button>
+          <button onclick="switchProfileTab('mySaved')" id="pTabSaved" class="flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white"><i class="far fa-bookmark mr-1"></i> Saved</button>
+        </div>
+
+        <div id="profPostsContainer" class="p-6 text-center text-gray-500 text-sm">Your published tweeds will appear here.</div>
+
+        <div id="profSavedContainer" class="p-4 hidden">
+          <div id="bookmarkList" class="space-y-3 text-sm text-gray-500 text-center py-6">
+            <i class="far fa-bookmark text-2xl block mb-2 text-sky-400"></i>
+            No saved bookmarks yet.
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FLOATING (+) ACTION BUTTON -->
+    <button onclick="openPostModal()" class="fixed bottom-20 right-5 sm:right-[calc(50%-16rem)] z-40 w-14 h-14 bg-sky-500 hover:bg-sky-400 active:scale-95 rounded-full text-black font-extrabold flex items-center justify-center shadow-2xl transition-transform border border-sky-300">
+      <i class="fas fa-plus text-2xl"></i>
+    </button>
+
+    <!-- TRINGO AI DASHBOARD MODAL -->
+    <div id="tringoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+      <div class="bg-gray-950 border border-gray-800 w-full max-w-md rounded-2xl p-4 shadow-2xl relative">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-sky-400 text-lg font-bold">▲</span>
+            <h3 class="font-extrabold text-base text-white">Tringo AI & Algorithm Monitor</h3>
+          </div>
+          <button onclick="closeTringoModal()" class="text-gray-400 hover:text-white text-base"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="tringoChatBox" class="h-40 overflow-y-auto space-y-2 mb-3 pr-1 text-xs">
+          <div class="bg-gray-900/60 p-2 rounded-xl border border-gray-800"><strong class="text-sky-400">Tringo AI:</strong> Hello Makki! Systems running at peak performance. Ready to monitor viral creators and earnings.</div>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="tringoPromptInput" placeholder="Ask Tringo AI..." class="w-full bg-gray-900 border border-gray-800 rounded-full px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+          <button onclick="askTringoAI()" class="bg-sky-500 text-black font-bold px-4 py-2 rounded-full text-xs hover:bg-sky-400">Ask</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WALLET & EARNINGS DASHBOARD MODAL -->
+    <div id="walletModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+      <div class="bg-gray-950 border border-gray-800 w-full max-w-md rounded-2xl p-5 shadow-2xl relative">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+          <h3 class="font-extrabold text-base text-white flex items-center gap-2"><i class="fas fa-wallet text-emerald-400"></i> Creator Earnings Wallet</h3>
+          <button onclick="closeWalletModal()" class="text-gray-400 hover:text-white text-base"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-2xl p-4 mb-4 text-center">
+          <p class="text-xs text-gray-400">Total Balance (USD)</p>
+          <h2 class="text-3xl font-black text-emerald-400 mt-1">$1,480.50</h2>
+          <p class="text-xs text-emerald-500 mt-1">≈ 414,540 PKR (Active Viral Revenue)</p>
+        </div>
+        <div class="space-y-2 text-xs text-gray-300 mb-4">
+          <div class="flex justify-between p-2 bg-gray-900 rounded-lg"><span>Ad Revenue Share</span><span class="font-bold text-white">$920.00</span></div>
+          <div class="flex justify-between p-2 bg-gray-900 rounded-lg"><span>Tringo AI Bonus</span><span class="font-bold text-white">$310.50</span></div>
+          <div class="flex justify-between p-2 bg-gray-900 rounded-lg"><span>Sponsored Posts</span><span class="font-bold text-white">$250.00</span></div>
+        </div>
+        <button onclick="alert('Withdrawal request submitted to Meezan Bank successfully!')" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-2.5 rounded-xl text-xs transition">Withdraw Funds (PKR)</button>
+      </div>
+    </div>
+
+    <!-- POST MODAL WITH TIKTOK CAMERA & FILTERS -->
+    <div id="postModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
+      <div class="bg-gray-950 border border-gray-800 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+          <h3 class="font-extrabold text-base text-white flex items-center gap-2"><i class="fas fa-plus-circle text-sky-400"></i> Compose PkTweed</h3>
+          <button onclick="closePostModal()" class="text-gray-400 hover:text-white p-1 text-lg"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="flex gap-3">
+          <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black">M</div>
+          <textarea id="modalPostInput" class="w-full bg-transparent text-white text-base focus:outline-none resize-none placeholder-gray-600" rows="3" placeholder="What is happening?!"></textarea>
+        </div>
+
+        <!-- In-App Camera & Filter Preview Box -->
+        <div id="modalMediaBox" class="hidden relative my-3">
+          <img id="modalImgPrev" class="w-full max-h-60 object-cover rounded-2xl border border-gray-800 filter-normal" />
+          <div class="flex gap-2 mt-2 overflow-x-auto pb-1">
+            <button onclick="applyCameraFilter('normal')" class="text-[10px] bg-gray-800 px-3 py-1 rounded-full text-white shrink-0">Normal</button>
+            <button onclick="applyCameraFilter('vibrant')" class="text-[10px] bg-sky-900 px-3 py-1 rounded-full text-sky-300 shrink-0">Vibrant ✨</button>
+            <button onclick="applyCam
