@@ -1,8 +1,7 @@
-/* PkTweed - Authentication & Session Engine (auth.js) - v1.0 */
+/* PkTweed - Authentication & Session Engine (auth.js) - v2.0 */
 
 let currentUser = null;
 
-// Initialize Auth check on page load
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
 });
@@ -19,7 +18,7 @@ function checkLocalAuth() {
   }
 }
 
-// Simulate Google Login Locally
+// Google Login Handler
 function signInWithGoogle() {
   currentUser = {
     name: 'Makki',
@@ -30,8 +29,46 @@ function signInWithGoogle() {
   localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
   updateHeaderUI(currentUser);
   hideAuthOverlay();
-  
   alert('🚀 Google Auth Successful! Tringo AI & Algorithm monitoring active. 🇵🇰');
+}
+
+// Facebook Login Handler
+function signInWithFacebook() {
+  currentUser = {
+    name: 'Makki',
+    handle: '@makki',
+    email: 'makki@pktweed.pk',
+    avatar: 'M'
+  };
+  localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
+  updateHeaderUI(currentUser);
+  hideAuthOverlay();
+  alert('🚀 Facebook Auth Successful! Welcome to PkTweed. 🇵🇰');
+}
+
+// Email/Password Login Handler
+function handleEmailLogin() {
+  const emailInput = document.getElementById('authEmail').value;
+  if (!emailInput.trim()) {
+    alert('Please enter your email or username!');
+    return;
+  }
+  currentUser = {
+    name: 'Makki',
+    handle: '@makki',
+    email: emailInput,
+    avatar: 'M'
+  };
+  localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
+  updateHeaderUI(currentUser);
+  hideAuthOverlay();
+  alert('🚀 Successfully logged in to PkTweed! 🇵🇰');
+}
+
+// Sign Up Handler
+function handleSignUp() {
+  alert('Redirecting to PkTweed VIP Creator Registration...');
+  signInWithGoogle();
 }
 
 // Logout Function
@@ -40,13 +77,11 @@ function logoutUser() {
   currentUser = null;
   updateHeaderUI(null);
   
-  // Show auth overlay again on logout
   const authOverlay = document.getElementById('authOverlay');
   if (authOverlay) {
     authOverlay.style.opacity = '1';
     authOverlay.style.display = 'flex';
   }
-  
   alert('Successfully logged out!');
 }
 
@@ -74,6 +109,7 @@ function updateHeaderUI(user) {
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="openWalletModal()" class="text-xs bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-extrabold px-3 py-1.5 rounded-full transition flex items-center gap-1"><i class="fas fa-wallet"></i> Wallet</button>
         <button onclick="logoutUser()" class="text-xs bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-full transition">Logout</button>
       </div>
     `;
