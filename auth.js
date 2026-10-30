@@ -1,9 +1,9 @@
-/* PkTweed - Multi-Account Selector & Auth Engine (auth.js) - v4.0 */
+/* PkTweed - Multi-Account Selector & Auth Engine (auth.js) - v6.0 */
 
 let currentUser = null;
 let currentProvider = 'google';
 
-// Pre-configured mock available Gmail accounts on the device
+// Device Saved Accounts Mock Dataset
 let deviceAccounts = {
   google: [
     { name: 'Makki Ghouri', email: 'makkigspirited@gmail.com', avatar: 'M' },
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
 });
 
-// Open Account Picker Modal showing all available accounts
+// Open Account Picker Modal showing available accounts
 function openAccountPicker(provider) {
   currentProvider = provider;
   const modal = document.getElementById('accountPickerModal');
@@ -69,7 +69,7 @@ function selectAccount(acc) {
   alert(`🚀 Successfully logged in as ${acc.name} (${acc.email})! 🇵🇰`);
 }
 
-// Add new account prompt
+// Add new custom account prompt
 function addNewAccountPrompt() {
   const newEmail = prompt(`Enter new ${currentProvider.toUpperCase()} email address:`, "newuser@gmail.com");
   if (newEmail && newEmail.includes('@')) {
@@ -79,7 +79,9 @@ function addNewAccountPrompt() {
       email: newEmail,
       avatar: namePart.charAt(0).toUpperCase()
     };
-    deviceAccounts[currentProvider].push(newAcc);
+    if (deviceAccounts[currentProvider]) {
+      deviceAccounts[currentProvider].push(newAcc);
+    }
     selectAccount(newAcc);
   }
 }
@@ -96,6 +98,7 @@ function checkLocalAuth() {
   }
 }
 
+// Save User State and Sync Header & Profile Info
 function saveUserAndSyncUI(user) {
   localStorage.setItem('pktweed_current_user', JSON.stringify(user));
   updateHeaderUI(user);
@@ -108,8 +111,9 @@ function saveUserAndSyncUI(user) {
   hideAuthOverlay();
 }
 
+// Manual Form Login Handler
 function handleEmailLogin() {
-  const emailInput = document.getElementById('authEmail').value;
+  const emailInput = document.getElementById('authEmail')?.value || '';
   if (!emailInput.trim()) {
     alert('Please enter your email or username!');
     return;
@@ -124,6 +128,11 @@ function handleEmailLogin() {
   saveUserAndSyncUI(currentUser);
 }
 
+function handleSignUp() {
+  openAccountPicker('google');
+}
+
+// Logout Engine
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
@@ -143,6 +152,7 @@ function hideAuthOverlay() {
   }
 }
 
+// Header UI Dynamic Updater
 function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
