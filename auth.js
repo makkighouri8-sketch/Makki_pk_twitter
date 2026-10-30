@@ -1,83 +1,86 @@
-/* PkTweed - Real Google OAuth & Session Engine (auth.js) - v3.0 */
+/* PkTweed - Multi-Account Selector & Auth Engine (auth.js) - v4.0 */
 
 let currentUser = null;
-// Replace this Client ID with your Google Cloud Console Client ID when deploying
-const GOOGLE_CLIENT_ID = "104838294029-exampleclientid.apps.googleusercontent.com";
+let currentProvider = 'google';
+
+// Pre-configured mock available Gmail accounts on the device
+let deviceAccounts = {
+  google: [
+    { name: 'Makki Ghouri', email: 'makkigspirited@gmail.com', avatar: 'M' },
+    { name: 'Makki Tech PK', email: 'makkitechdev@gmail.com', avatar: 'T' },
+    { name: 'Official PkTweed', email: 'pktweed.official@gmail.com', avatar: 'P' }
+  ],
+  facebook: [
+    { name: 'Makki Ghouri FB', email: 'makki.fb.account@facebook.com', avatar: 'F' }
+  ],
+  tiktok: [
+    { name: 'Makki Official TikTok', email: 'makki_tiktok@creator.pk', avatar: 'K' }
+  ]
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
-  initGoogleAuth();
 });
 
-// Initialize Official Google Identity Services SDK
-function initGoogleAuth() {
-  if (window.google && window.google.accounts) {
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredentialResponse,
-      auto_select: false
+// Open Account Picker Modal showing all available accounts
+function openAccountPicker(provider) {
+  currentProvider = provider;
+  const modal = document.getElementById('accountPickerModal');
+  const title = document.getElementById('pickerTitle');
+  const container = document.getElementById('accountsListContainer');
+  
+  if (title) title.innerText = `Choose a ${provider.toUpperCase()} account`;
+  if (container) {
+    container.innerHTML = '';
+    const accounts = deviceAccounts[provider] || deviceAccounts.google;
+    
+    accounts.forEach(acc => {
+      const item = document.createElement('div');
+      item.className = 'flex items-center gap-3 p-3 bg-gray-900 hover:bg-gray-800 rounded-2xl cursor-pointer border border-gray-800/80 transition';
+      item.onclick = () => selectAccount(acc);
+      item.innerHTML = `
+        <div class="w-10 h-10 rounded-full bg-sky-500 text-black font-extrabold flex items-center justify-center text-sm shrink-0 shadow">${acc.avatar}</div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-white text-xs truncate">${acc.name}</p>
+          <p class="text-gray-400 text-[11px] truncate">${acc.email}</p>
+        </div>
+        <i class="fas fa-chevron-right text-gray-600 text-xs"></i>
+      `;
+      container.appendChild(item);
     });
-
-    // Render hidden official Google button for fallback execution
-    google.accounts.id.renderButton(
-      document.getElementById("googleBtnHidden"),
-      { theme: "outline", size: "large" }
-    );
   }
+  if (modal) modal.classList.remove('hidden');
 }
 
-// Custom Google Button Click Event (Opens Google Account Picker Modal)
-function signInWithGoogle() {
-  if (window.google && window.google.accounts) {
-    // Triggers real Google Account Picker modal overlay
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback: If popup is blocked by browser, decode local account selector
-        triggerRealAccountPicker();
-      }
-    });
-  } else {
-    triggerRealAccountPicker();
-  }
+function closeAccountPicker() {
+  document.getElementById('accountPickerModal')?.classList.add('hidden');
 }
 
-// Fallback Real Dynamic Account Picker (Prompting User Gmail Choice)
-function triggerRealAccountPicker() {
-  const userGmail = prompt("Select or enter your Google Account email:", "makki@gmail.com");
-  if (userGmail && userGmail.includes('@')) {
-    const accountName = userGmail.split('@')[0];
-    currentUser = {
-      name: accountName.charAt(0).toUpperCase() + accountName.slice(1),
-      handle: '@' + accountName,
-      email: userGmail,
-      avatar: accountName.charAt(0).toUpperCase()
+// Select specific account from picker
+function selectAccount(acc) {
+  currentUser = {
+    name: acc.name,
+    handle: '@' + acc.email.split('@')[0],
+    email: acc.email,
+    avatar: acc.avatar
+  };
+  saveUserAndSyncUI(currentUser);
+  closeAccountPicker();
+  alert(`🚀 Successfully logged in as ${acc.name} (${acc.email})! 🇵🇰`);
+}
+
+// Add new account prompt
+function addNewAccountPrompt() {
+  const newEmail = prompt(`Enter new ${currentProvider.toUpperCase()} email address:`, "newuser@gmail.com");
+  if (newEmail && newEmail.includes('@')) {
+    const namePart = newEmail.split('@')[0];
+    const newAcc = {
+      name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+      email: newEmail,
+      avatar: namePart.charAt(0).toUpperCase()
     };
-    saveUserAndSyncUI(currentUser);
-  }
-}
-
-// Callback when user signs in with Google OAuth JWT
-function handleGoogleCredentialResponse(response) {
-  try {
-    // Decode Base64 JWT payload from Google Identity SDK
-    const base64Url = response.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const payload = JSON.parse(jsonPayload);
-    currentUser = {
-      name: payload.name || 'Makki',
-      handle: '@' + (payload.email ? payload.email.split('@')[0] : 'makki'),
-      email: payload.email,
-      avatar: payload.picture || payload.name[0]
-    };
-
-    saveUserAndSyncUI(currentUser);
-  } catch (e) {
-    console.error("Google Auth Decode Error:", e);
-    triggerRealAccountPicker();
+    deviceAccounts[currentProvider].push(newAcc);
+    selectAccount(newAcc);
   }
 }
 
@@ -93,66 +96,38 @@ function checkLocalAuth() {
   }
 }
 
-// Save User Data and Sync Across App
 function saveUserAndSyncUI(user) {
   localStorage.setItem('pktweed_current_user', JSON.stringify(user));
   updateHeaderUI(user);
   
-  // Sync profile details across UI
   const nameDisp = document.getElementById('profileNameDisplay');
   const handleDisp = document.getElementById('profileHandleDisplay');
-  const headerName = document.getElementById('headerUserName');
-  
   if (nameDisp) nameDisp.innerText = user.name;
   if (handleDisp) handleDisp.innerText = user.handle;
-  if (headerName) headerName.innerText = user.name;
   
   hideAuthOverlay();
 }
 
-// Facebook Login Handler
-function signInWithFacebook() {
-  const fbEmail = prompt("Enter your Facebook Email or Username:", "makki@facebook.com");
-  if (fbEmail) {
-    const accountName = fbEmail.split('@')[0];
-    currentUser = {
-      name: accountName.charAt(0).toUpperCase() + accountName.slice(1),
-      handle: '@' + accountName,
-      email: fbEmail,
-      avatar: accountName.charAt(0).toUpperCase()
-    };
-    saveUserAndSyncUI(currentUser);
-  }
-}
-
-// Email/Password Login Handler
 function handleEmailLogin() {
   const emailInput = document.getElementById('authEmail').value;
   if (!emailInput.trim()) {
     alert('Please enter your email or username!');
     return;
   }
-  const accountName = emailInput.split('@')[0];
+  const namePart = emailInput.split('@')[0];
   currentUser = {
-    name: accountName.charAt(0).toUpperCase() + accountName.slice(1),
-    handle: '@' + accountName,
+    name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+    handle: '@' + namePart,
     email: emailInput,
-    avatar: accountName.charAt(0).toUpperCase()
+    avatar: namePart.charAt(0).toUpperCase()
   };
   saveUserAndSyncUI(currentUser);
 }
 
-// Sign Up Handler
-function handleSignUp() {
-  signInWithGoogle();
-}
-
-// Logout Function
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
   updateHeaderUI(null);
-  
   const authOverlay = document.getElementById('authOverlay');
   if (authOverlay) {
     authOverlay.style.opacity = '1';
@@ -160,24 +135,20 @@ function logoutUser() {
   }
 }
 
-// Hide Auth Overlay Smoothly
 function hideAuthOverlay() {
   const authOverlay = document.getElementById('authOverlay');
   if (authOverlay) {
     authOverlay.style.opacity = '0';
-    setTimeout(() => {
-      authOverlay.style.display = 'none';
-    }, 400);
+    setTimeout(() => { authOverlay.style.display = 'none'; }, 400);
   }
 }
 
-// Update Header UI Safely
 function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
 
   const displayName = user ? user.name : 'Makki';
-  const avatarLetter = user ? user.name[0].toUpperCase() : 'M';
+  const avatarLetter = user ? user.avatar : 'M';
 
   if (user) {
     headerContainer.innerHTML = `
@@ -199,8 +170,8 @@ function updateHeaderUI(user) {
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
-        <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
+        <button onclick="openAccountPicker('google')" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login</button>
       </div>
     `;
   }
-                               }
+}
