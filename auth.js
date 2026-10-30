@@ -1,103 +1,98 @@
-/* PkTweed - Real Google Identity Services (GSI) Auth Engine (auth.js) - v12.0 */
+/* PkTweed - Dynamic Local Account Manager Engine (auth.js) - v13.0 */
 
 let currentUser = null;
+let currentProvider = 'google';
 
-// Initialize Google Identity Services SDK on Load
+// Load stored accounts from browser localStorage or start fresh
+function getDeviceAccounts(provider) {
+  try {
+    const saved = localStorage.getItem(`pktweed_accounts_${provider}`);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  
+  // Default empty or initial user account list
+  return [];
+}
+
+function saveDeviceAccount(provider, acc) {
+  let accounts = getDeviceAccounts(provider);
+  // Check if already exists
+  if (!accounts.some(a => a.email === acc.email)) {
+    accounts.push(acc);
+    localStorage.setItem(`pktweed_accounts_${provider}`, JSON.stringify(accounts));
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
-  initGoogleGSI();
 });
 
-function initGoogleGSI() {
-  if (window.google && window.google.accounts) {
-    google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // Replace with your Google Cloud Client ID when live
-      callback: handleGoogleCredentialResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true
-    });
-  }
-}
-
-// Real Google Account Selection Trigger
+// Open Account Picker Modal showing real added accounts
 function openAccountPicker(provider) {
-  if (provider === 'google') {
-    signInWithGoogle();
-  } else if (provider === 'facebook') {
-    signInWithFacebook();
-  } else if (provider === 'tiktok') {
-    signInWithTikTok();
+  currentProvider = provider;
+  const modal = document.getElementById('accountPickerModal');
+  const title = document.getElementById('pickerTitle');
+  const container = document.getElementById('accountsListContainer');
+  
+  if (title) title.innerText = `Choose a ${provider.toUpperCase()} account`;
+  if (container) {
+    container.innerHTML = '';
+    const accounts = getDeviceAccounts(provider);
+    
+    if (accounts.length === 0) {
+      container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">No accounts saved yet. Click below to add your real account.</p>`;
+    } else {
+      accounts.forEach(acc => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-2xl cursor-pointer border border-gray-200 transition';
+        item.onclick = () => selectAccount(acc);
+        item.innerHTML = `
+          <div class="w-10 h-10 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-sm shrink-0 shadow">${acc.avatar}</div>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-gray-900 text-xs truncate">${acc.name}</p>
+            <p class="text-gray-500 text-[11px] truncate">${acc.email}</p>
+          </div>
+          <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        `;
+        container.appendChild(item);
+      });
+    }
   }
+  if (modal) modal.classList.remove('hidden');
 }
 
-function signInWithGoogle() {
-  if (window.google && window.google.accounts) {
-    // Triggers native mobile/browser Google account chooser pop-up
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        fallbackManualEmailPrompt('Google');
-      }
-    });
-  } else {
-    fallbackManualEmailPrompt('Google');
-  }
+function closeAccountPicker() {
+  document.getElementById('accountPickerModal')?.classList.add('hidden');
 }
 
-// Handle Real Google JWT Credential Response
-function handleGoogleCredentialResponse(response) {
-  try {
-    const base64Url = response.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const payload = JSON.parse(jsonPayload);
-    currentUser = {
-      name: payload.name || 'User',
-      handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
-      email: payload.email,
-      avatar: payload.picture || (payload.name ? payload.name[0].toUpperCase() : 'U')
-    };
-
-    saveUserAndSyncUI(currentUser);
-    alert(`🚀 Successfully logged in with real Google Account (${payload.email})! 🇵🇰`);
-  } catch (e) {
-    console.error("Google Auth Decode Error:", e);
-  }
-}
-
-function signInWithFacebook() {
-  const fbEmail = prompt("Enter your Facebook Email or Username:", "");
-  if (fbEmail && fbEmail.trim()) {
-    processSocialLogin(fbEmail, 'Facebook');
-  }
-}
-
-function signInWithTikTok() {
-  const tkHandle = prompt("Enter your TikTok Username:", "@");
-  if (tkHandle && tkHandle.trim()) {
-    processSocialLogin(tkHandle, 'TikTok');
-  }
-}
-
-function fallbackManualEmailPrompt(providerName) {
-  const userEmail = prompt(`Enter your real ${providerName} Email:`, "");
-  if (userEmail && userEmail.includes('@')) {
-    processSocialLogin(userEmail, providerName);
-  }
-}
-
-function processSocialLogin(identifier, providerName) {
-  const cleanId = identifier.replace('@', '');
-  const namePart = cleanId.split('@')[0];
+function selectAccount(acc) {
   currentUser = {
-    name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
-    handle: '@' + namePart,
-    email: identifier.includes('@') ? identifier : identifier + '@' + providerName.toLowerCase() + '.com',
-    avatar: namePart.charAt(0).toUpperCase()
+    name: acc.name,
+    handle: '@' + acc.email.split('@')[0],
+    email: acc.email,
+    avatar: acc.avatar
   };
   saveUserAndSyncUI(currentUser);
+  closeAccountPicker();
+  alert(`🚀 Successfully logged in as ${acc.name} (${acc.email})! 🇵🇰`);
+}
+
+// TikTok / Google style prompt to add real account
+function addNewAccountPrompt() {
+  const realEmail = prompt(`Apni real ${currentProvider.toUpperCase()} Gmail ID enter karein (e.g. yourname@gmail.com):`, "");
+  if (realEmail && realEmail.includes('@')) {
+    const nameInput = prompt("Apna naam enter karein:", "My Name");
+    const formattedName = nameInput ? nameInput : realEmail.split('@')[0];
+    
+    const newAcc = {
+      name: formattedName,
+      email: realEmail,
+      avatar: formattedName.charAt(0).toUpperCase()
+    };
+    
+    saveDeviceAccount(currentProvider, newAcc);
+    selectAccount(newAcc);
+  }
 }
 
 // Local Session Auth Check
@@ -108,7 +103,7 @@ function checkLocalAuth() {
       currentUser = JSON.parse(savedUser);
       updateHeaderUI(currentUser);
       hideAuthOverlay();
-    } catch (e) {
+    } catch(e) {
       localStorage.removeItem('pktweed_current_user');
       updateHeaderUI(null);
     }
@@ -117,7 +112,6 @@ function checkLocalAuth() {
   }
 }
 
-// Save User Session & Sync UI Elements
 function saveUserAndSyncUI(user) {
   localStorage.setItem('pktweed_current_user', JSON.stringify(user));
   updateHeaderUI(user);
@@ -130,21 +124,22 @@ function saveUserAndSyncUI(user) {
   hideAuthOverlay();
 }
 
-// Manual Form Login
 function handleEmailLogin() {
   const emailInput = document.getElementById('authEmail')?.value || '';
   if (!emailInput.trim()) {
     alert('Please enter your email or username!');
     return;
   }
-  processSocialLogin(emailInput, 'Email');
+  const namePart = emailInput.split('@')[0];
+  currentUser = {
+    name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+    handle: '@' + namePart,
+    email: emailInput,
+    avatar: namePart.charAt(0).toUpperCase()
+  };
+  saveUserAndSyncUI(currentUser);
 }
 
-function handleSignUp() {
-  signInWithGoogle();
-}
-
-// Logout Action
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
@@ -160,13 +155,10 @@ function hideAuthOverlay() {
   const authOverlay = document.getElementById('authOverlay');
   if (authOverlay) {
     authOverlay.style.opacity = '0';
-    setTimeout(() => { 
-      authOverlay.style.display = 'none'; 
-    }, 300);
+    setTimeout(() => { authOverlay.style.display = 'none'; }, 300);
   }
 }
 
-// Dynamic Header UI Handler
 function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
@@ -198,5 +190,4 @@ function updateHeaderUI(user) {
       </div>
     `;
   }
-                      }
-    
+}
