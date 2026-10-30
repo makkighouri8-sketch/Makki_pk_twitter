@@ -42,19 +42,6 @@ function checkLocalAuth() {
   }
 }
 
-function signInWithGoogle() {
-  currentUser = {
-    name: 'Makki',
-    handle: '@makki',
-    email: 'makki@pktweed.pk',
-    avatar: 'M'
-  };
-  localStorage.setItem('pktweed_current_user', JSON.stringify(currentUser));
-  updateHeaderUI(currentUser);
-  hideAuthOverlay();
-  alert('🚀 Google Auth Successful! Tringo AI & Algorithm monitoring active. 🇵🇰');
-}
-
 function logoutUser() {
   localStorage.removeItem('pktweed_current_user');
   currentUser = null;
@@ -82,11 +69,14 @@ function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
 
+  const displayName = user ? user.name : 'Makki';
+  const avatarLetter = user ? user.avatar : 'M';
+
   if (user) {
     headerContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
-        <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px]">Makki</span>
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">${avatarLetter}</div>
+        <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px]">${displayName}</span>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
@@ -98,11 +88,11 @@ function updateHeaderUI(user) {
     headerContainer.innerHTML = `
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
-        <span class="text-white font-semibold text-xs sm:text-sm">Makki</span>
+        <span class="text-white font-semibold text-xs sm:text-sm">Guest</span>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-700 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
-        <button onclick="signInWithGoogle()" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login with Google</button>
+        <button onclick="openAccountPicker('google')" class="text-xs bg-sky-500 hover:bg-sky-400 text-black font-bold px-3 py-1.5 rounded-full transition">Login</button>
       </div>
     `;
   }
@@ -247,40 +237,40 @@ function renderProfilePosts(posts) {
   });
 }
 
-function createNewModalPost() {
-  const inputEl = document.getElementById('modalPostInput');
-  const textVal = inputEl ? inputEl.value : '';
-  if (!textVal.trim() && !activeMedia) return;
+// Direct Camera Trigger Functions
+function triggerDirectCamera() {
+  const camInput = document.getElementById('directCameraInput');
+  if (camInput) {
+    camInput.click();
+  }
+}
 
-  const newPostData = {
-    id: 'post_' + Date.now(),
-    user_name: 'Makki',
-    user_handle: '@makki',
-    content: textVal,
-    media_url: activeMedia || null,
-    likes: 0,
-    retweets: 0,
-    comments_count: 0,
-    created_at: new Date().toISOString()
+function handleDirectCameraCapture(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const mediaUrl = e.target.result;
+    const newPostData = {
+      id: 'post_' + Date.now(),
+      user_name: currentUser ? currentUser.name : 'Makki',
+      user_handle: currentUser ? currentUser.handle : '@makki',
+      content: 'Captured live via PkTweed In-App Camera 📸🇵🇰',
+      media_url: mediaUrl,
+      likes: 0,
+      retweets: 0,
+      comments_count: 0,
+      created_at: new Date().toISOString()
+    };
+    try {
+      let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
+      localPosts.unshift(newPostData);
+      localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
+      loadSmartFeed();
+      alert('📸 Camera capture successfully published to your feed!');
+    } catch (err) {}
   };
-
-  if (inputEl) inputEl.value = '';
-  closePostModal();
-  switchPage('feed');
-  
-  try {
-    let localPosts = JSON.parse(localStorage.getItem('pktweed_posts_list') || '[]');
-    localPosts.unshift(newPostData);
-    localStorage.setItem('pktweed_posts_list', JSON.stringify(localPosts));
-    loadSmartFeed();
-  } catch (e) {}
-
-  notificationsData.unshift({
-    id: Date.now(),
-    type: 'alert',
-    text: 'Your PkTweed was successfully distributed by the algorithm! 🚀',
-    time: 'Just now'
-  });
+  reader.readAsDataURL(file);
 }
 
 function updatePostInStorage(postId, updateFn) {
@@ -524,4 +514,4 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response 
+    let response = "Tringo AI: X-Style Algorithm, monetization wallets
