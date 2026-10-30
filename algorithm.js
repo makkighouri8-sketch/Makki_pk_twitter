@@ -12,13 +12,31 @@ function calculateTimeAgo(timestamp) {
   return days + 'd ago';
 }
 
-// X-Style Smart Ranking Algorithm
+// X-Style Smart Ranking Algorithm with Tringo AI Integration
 function sortPostsByXAlgorithm(posts) {
   return posts.sort((a, b) => {
-    const scoreA = (a.likes * 2) + (a.retweets * 3) + (a.comments_count || 0 * 4);
-    const scoreB = (b.likes * 2) + (b.retweets * 3) + (b.comments_count || 0 * 4);
+    const scoreA = (a.likes * 2) + (a.retweets * 3) + ((a.comments_count || 0) * 4);
+    const scoreB = (b.likes * 2) + (b.retweets * 3) + ((b.comments_count || 0) * 4);
     const timeA = new Date(a.created_at || Date.now()).getTime();
     const timeB = new Date(b.created_at || Date.now()).getTime();
     return (scoreB * 10 + timeB) - (scoreA * 10 + timeA);
   });
+}
+
+// Tringo AI Creator Milestone & Green Tick Verification Algorithm
+function evaluateCreatorMilestone(followerCount) {
+  if (followerCount >= 10000) {
+    return {
+      isVerified: true,
+      badge: 'Green Tick 🟢',
+      discountOffer: '50% OFF on Premium Features & Creator Wallet Boost',
+      status: 'Active VIP Creator'
+    };
+  }
+  return {
+    isVerified: false,
+    badge: 'Standard',
+    discountOffer: 'Unlock at 10k Followers',
+    status: 'Growing'
+  };
 }
