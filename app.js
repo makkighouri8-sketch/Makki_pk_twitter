@@ -1,4 +1,4 @@
-/* PkTweed - X (Twitter) Style Algorithm & 1s Smooth Transitions Engine (app.js) - v105.0 */
+/* PkTweed - X (Twitter) Style Algorithm & 1s Smooth Transitions Engine (app.js) - v106.0 */
 
 window.onerror = function(msg, url, line) {
   console.error(`JS Exception Caught: ${msg} at line ${line}`);
@@ -34,9 +34,14 @@ function escapeHTML(str) {
 function checkLocalAuth() {
   const savedUser = localStorage.getItem('pktweed_current_user');
   if (savedUser) {
-    currentUser = JSON.parse(savedUser);
-    updateHeaderUI(currentUser);
-    hideAuthOverlay();
+    try {
+      currentUser = JSON.parse(savedUser);
+      updateHeaderUI(currentUser);
+      hideAuthOverlay();
+    } catch (e) {
+      localStorage.removeItem('pktweed_current_user');
+      updateHeaderUI(null);
+    }
   } else {
     updateHeaderUI(null);
   }
@@ -61,7 +66,7 @@ function hideAuthOverlay() {
     authOverlay.style.opacity = '0';
     setTimeout(() => {
       authOverlay.style.display = 'none';
-    }, 400);
+    }, 300);
   }
 }
 
@@ -110,7 +115,6 @@ function calculateTimeAgo(timestamp) {
   return days + 'd ago';
 }
 
-// X-Style Smart Ranking Algorithm
 function loadSmartFeed() {
   const timeline = document.getElementById('timeline');
   if (!timeline) return;
@@ -237,7 +241,6 @@ function renderProfilePosts(posts) {
   });
 }
 
-// Direct Camera Trigger Functions
 function triggerDirectCamera() {
   const camInput = document.getElementById('directCameraInput');
   if (camInput) {
@@ -483,7 +486,6 @@ function renderNotifications() {
   `;
 }
 
-// 10k Followers Milestone & Green Tick Check
 function checkFollowerMilestone() {
   if (typeof evaluateCreatorMilestone === 'function') {
     const result = evaluateCreatorMilestone(followersCount);
@@ -494,7 +496,6 @@ function checkFollowerMilestone() {
   }
 }
 
-// Wallet Modal Controls
 function openWalletModal() { document.getElementById('walletModal')?.classList.remove('hidden'); }
 function closeWalletModal() { document.getElementById('walletModal')?.classList.add('hidden'); }
 
@@ -514,4 +515,4 @@ function askTringoAI() {
   input.value = '';
 
   setTimeout(() => {
-    let response = "Tringo AI: X-Style Algorithm, monetization wallets
+    let response = "Tringo AI: X-Style Algorithm, monetization wallets, and smooth trans
