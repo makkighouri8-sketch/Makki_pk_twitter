@@ -1,68 +1,93 @@
-/* PkTweed - Official Google OAuth2 Native Token Client Auth Engine (auth.js) - v19.0 */
+/* PkTweed - Ultimate Google Native Auth Engine (auth.js) - v20.0 */
 
 let currentUser = null;
 const GOOGLE_CLIENT_ID = "848310764443-inr2acmajlba7d0q492a9ha59kgphi2i.apps.googleusercontent.com";
 
-let googleTokenClient = null;
-
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
-  initGoogleTokenClient();
+  initGoogleOneTapSDK();
 });
 
-// Initialize Google OAuth2 Token Client for Native Account Chooser Popup
-function initGoogleTokenClient() {
-  if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-    googleTokenClient = google.accounts.oauth2.initTokenClient({
+// Initialize Google Identity Services One Tap & Prompt
+function initGoogleOneTapSDK() {
+  if (window.google && window.google.accounts) {
+    google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
-      callback: async (response) => {
-        if (response && response.access_token) {
-          try {
-            // Fetch user profile info using the Google Access Token
-            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { 'Authorization': `Bearer ${response.access_token}` }
-            });
-            const payload = await res.json();
-            
-            currentUser = {
-              name: payload.name || 'User',
-              handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
-              email: payload.email,
-              avatar: payload.picture || (payload.name ? payload.name[0].toUpperCase() : 'U')
-            };
-
-            saveUserAndSyncUI(currentUser);
-            alert(`🚀 Successfully logged in as ${currentUser.name}! 🇵🇰`);
-          } catch (err) {
-            console.error("Failed to fetch Google user info:", err);
-            alert("Google login failed. Please try again.");
-          }
-        }
-      },
+      callback: handleGoogleResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      context: 'signin'
     });
+
+    // Automatically trigger Google One Tap floating prompt for instant account selection
+    try {
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          console.log("One Tap prompt was skipped or not displayed, using manual trigger.");
+        }
+      });
+    } catch (err) {
+      console.log("One Tap prompt error:", err);
+    }
   }
 }
 
-// Open Native Google Account Chooser (Shows all device Gmails like Freelancer app)
+// Open Account Picker (Triggers Google One Tap Sheet / Popup)
 function openAccountPicker(provider) {
   if (provider === 'google') {
-    if (googleTokenClient) {
-      // This triggers the exact native Google account chooser popup showing all Gmaisl!
-      googleTokenClient.requestAccessToken();
+    if (window.google && window.google.accounts) {
+      // Forcefully render and prompt Google One Tap account chooser sheet
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Fallback to OAuth popup if One Tap is blocked by browser settings
+          triggerOAuthPopup();
+        }
+      });
     } else {
-      // Fallback if SDK is still initializing
-      initGoogleTokenClient();
-      if (googleTokenClient) {
-        googleTokenClient.requestAccessToken();
-      } else {
-        alert("Google services are loading. Please try again in a moment.");
-      }
+      alert("Google services are loading. Please refresh the page.");
     }
   } else if (provider === 'facebook') {
     triggerCleanLoginModal('Facebook');
   } else if (provider === 'tiktok') {
     triggerCleanLoginModal('TikTok');
+  }
+}
+
+// Fallback Google OAuth Popup Window
+function triggerOAuthPopup() {
+  const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=token&scope=email%20profile`;
+  const popup = window.open(oauthUrl, 'GoogleLogin', 'width=500,height=600');
+  
+  // Listen for popup message or check storage if redirected
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.credential) {
+      handleGoogleResponse({ credential: event.data.credential });
+      if (popup) popup.close();
+    }
+  }, false);
+}
+
+// Handle Google Response JWT Token
+function handleGoogleResponse(response) {
+  try {
+    const base64Url = response.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const payload = JSON.parse(jsonPayload);
+    currentUser = {
+      name: payload.name || 'User',
+      handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
+      email: payload.email,
+      avatar: payload.picture || (payload.name ? payload.name[0].toUpperCase() : 'U')
+    };
+
+    saveUserAndSyncUI(currentUser);
+    alert(`🚀 Successfully logged in as ${currentUser.name}! 🇵🇰`);
+  } catch (e) {
+    console.error("Google Auth Parsing Error:", e);
   }
 }
 
