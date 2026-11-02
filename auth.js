@@ -1,39 +1,63 @@
-/* PkTweed - Official Google GSI & Clean Auth Engine (auth.js) - v18.0 */
+/* PkTweed - Official Google OAuth2 Native Token Client Auth Engine (auth.js) - v19.0 */
 
 let currentUser = null;
-
-// Official Google Client ID integrated
 const GOOGLE_CLIENT_ID = "848310764443-inr2acmajlba7d0q492a9ha59kgphi2i.apps.googleusercontent.com";
+
+let googleTokenClient = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
-  initGoogleOneTap();
+  initGoogleTokenClient();
 });
 
-// Initialize Official Google Identity Services SDK
-function initGoogleOneTap() {
-  if (window.google && window.google.accounts) {
-    google.accounts.id.initialize({
+// Initialize Google OAuth2 Token Client for Native Account Chooser Popup
+function initGoogleTokenClient() {
+  if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true
+      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      callback: async (response) => {
+        if (response && response.access_token) {
+          try {
+            // Fetch user profile info using the Google Access Token
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { 'Authorization': `Bearer ${response.access_token}` }
+            });
+            const payload = await res.json();
+            
+            currentUser = {
+              name: payload.name || 'User',
+              handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
+              email: payload.email,
+              avatar: payload.picture || (payload.name ? payload.name[0].toUpperCase() : 'U')
+            };
+
+            saveUserAndSyncUI(currentUser);
+            alert(`🚀 Successfully logged in as ${currentUser.name}! 🇵🇰`);
+          } catch (err) {
+            console.error("Failed to fetch Google user info:", err);
+            alert("Google login failed. Please try again.");
+          }
+        }
+      },
     });
   }
 }
 
-// Open Account Picker (Direct Google/Facebook/TikTok Action)
+// Open Native Google Account Chooser (Shows all device Gmails like Freelancer app)
 function openAccountPicker(provider) {
   if (provider === 'google') {
-    if (window.google && window.google.accounts) {
-      // Real native Google account chooser popup
-      google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          triggerCleanLoginModal('Google');
-        }
-      });
+    if (googleTokenClient) {
+      // This triggers the exact native Google account chooser popup showing all Gmaisl!
+      googleTokenClient.requestAccessToken();
     } else {
-      triggerCleanLoginModal('Google');
+      // Fallback if SDK is still initializing
+      initGoogleTokenClient();
+      if (googleTokenClient) {
+        googleTokenClient.requestAccessToken();
+      } else {
+        alert("Google services are loading. Please try again in a moment.");
+      }
     }
   } else if (provider === 'facebook') {
     triggerCleanLoginModal('Facebook');
@@ -42,31 +66,6 @@ function openAccountPicker(provider) {
   }
 }
 
-// Handle Google Response JWT Token
-function handleGoogleResponse(response) {
-  try {
-    const base64Url = response.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const payload = JSON.parse(jsonPayload);
-    currentUser = {
-      name: payload.name || 'User',
-      handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
-      email: payload.email,
-      avatar: payload.picture || (payload.name ? payload.name[0].toUpperCase() : 'U')
-    };
-
-    saveUserAndSyncUI(currentUser);
-    alert(`Successfully logged in as ${currentUser.name}! 🇵🇰`);
-  } catch (e) {
-    console.error("Google Auth Error:", e);
-  }
-}
-
-// Clean Professional Fallback Modal
 function triggerCleanLoginModal(providerName) {
   const userEmail = prompt(`Enter your ${providerName} email address:`, "");
   if (userEmail && userEmail.includes('@')) {
@@ -165,23 +164,23 @@ function updateHeaderUI(user) {
   if (user) {
     headerContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-sm">${avatarLetter}</div>
-        <span class="text-gray-900 font-semibold text-xs sm:text-sm truncate max-w-[120px]">${displayName}</span>
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">${avatarLetter}</div>
+        <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px]">${displayName}</span>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="switchPage('profile')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
-        <button onclick="openWalletModal()" class="text-xs bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-full transition flex items-center gap-1"><i class="fas fa-wallet"></i> Wallet</button>
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-800 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="openWalletModal()" class="text-xs bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-extrabold px-3 py-1.5 rounded-full transition flex items-center gap-1"><i class="fas fa-wallet"></i> Wallet</button>
         <button onclick="logoutUser()" class="text-xs bg-red-600 text-white font-bold px-3 py-1.5 rounded-full transition">Logout</button>
       </div>
     `;
   } else {
     headerContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-sm">M</div>
-        <span class="text-gray-900 font-semibold text-sm">Guest</span>
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">M</div>
+        <span class="text-white font-semibold text-sm">Guest</span>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="switchPage('profile')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
+        <button onclick="switchPage('profile')" class="text-xs bg-gray-900 hover:bg-gray-800 text-white border border-gray-800 font-medium px-3 py-1.5 rounded-full transition">My Profile</button>
         <button onclick="openAccountPicker('google')" class="text-xs bg-blue-600 text-white font-bold px-3 py-1.5 rounded-full transition">Login</button>
       </div>
     `;
