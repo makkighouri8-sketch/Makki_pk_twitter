@@ -1,0 +1,6 @@
+{
+  "appId": "com.pktweed.app",
+  "appName": "PkTweed",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
