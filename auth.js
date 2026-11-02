@@ -1,6 +1,9 @@
-/* PkTweed - Official Google GSI & Clean Auth Engine (auth.js) - v17.0 */
+/* PkTweed - Official Google GSI & Clean Auth Engine (auth.js) - v18.0 */
 
 let currentUser = null;
+
+// Official Google Client ID integrated
+const GOOGLE_CLIENT_ID = "848310764443-inr2acmajlba7d0q492a9ha59kgphi2i.apps.googleusercontent.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
@@ -11,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function initGoogleOneTap() {
   if (window.google && window.google.accounts) {
     google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // Aap yahan apni Google Console client ID daal sakte hain
+      client_id: GOOGLE_CLIENT_ID,
       callback: handleGoogleResponse,
       auto_select: false,
       cancel_on_tap_outside: true
@@ -23,7 +26,7 @@ function initGoogleOneTap() {
 function openAccountPicker(provider) {
   if (provider === 'google') {
     if (window.google && window.google.accounts) {
-      // Yeh line phone/browser ka real native Google account chooser popup kholti hai
+      // Real native Google account chooser popup
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
           triggerCleanLoginModal('Google');
@@ -53,7 +56,7 @@ function handleGoogleResponse(response) {
       name: payload.name || 'User',
       handle: '@' + (payload.email ? payload.email.split('@')[0] : 'user'),
       email: payload.email,
-      avatar: payload.picture || payload.name[0].toUpperCase()
+      avatar: payload.picture || (payload.name ? payload.name[0].toUpperCase() : 'U')
     };
 
     saveUserAndSyncUI(currentUser);
@@ -63,7 +66,7 @@ function handleGoogleResponse(response) {
   }
 }
 
-// Clean Professional Modal instead of ugly prompt()
+// Clean Professional Fallback Modal
 function triggerCleanLoginModal(providerName) {
   const userEmail = prompt(`Enter your ${providerName} email address:`, "");
   if (userEmail && userEmail.includes('@')) {
