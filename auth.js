@@ -1,11 +1,12 @@
-/* PkTweed - Ultimate Google Native Auth Engine (auth.js) - v20.0 */
+/* PkTweed - Ultimate Google Native Auth Engine (auth.js) - v20.1 */
 
 let currentUser = null;
 const GOOGLE_CLIENT_ID = "848310764443-inr2acmajlba7d0q492a9ha59kgphi2i.apps.googleusercontent.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
-  initGoogleOneTapSDK();
+  // Small delay to ensure Google Identity Services SDK script is fully loaded
+  setTimeout(initGoogleOneTapSDK, 500);
 });
 
 // Initialize Google Identity Services One Tap & Prompt
@@ -14,16 +15,18 @@ function initGoogleOneTapSDK() {
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: handleGoogleResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true,
+      auto_select: true, // Auto-prompts active saved Google account on mobile/web
+      cancel_on_tap_outside: false,
       context: 'signin'
     });
 
-    // Automatically trigger Google One Tap floating prompt for instant account selection
+    // Automatically trigger Google One Tap floating sheet
     try {
       google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          console.log("One Tap prompt was skipped or not displayed, using manual trigger.");
+        if (notification.isNotDisplayed()) {
+          console.log("One Tap not displayed reason:", notification.getNotDisplayedReason());
+        } else if (notification.isSkippedMoment()) {
+          console.log("One Tap skipped reason:", notification.getSkippedReason());
         }
       });
     } catch (err) {
@@ -32,19 +35,19 @@ function initGoogleOneTapSDK() {
   }
 }
 
-// Open Account Picker (Triggers Google One Tap Sheet / Popup)
+// Open Account Picker (Triggers Google One Tap Sheet / Fallback Popup)
 function openAccountPicker(provider) {
   if (provider === 'google') {
     if (window.google && window.google.accounts) {
-      // Forcefully render and prompt Google One Tap account chooser sheet
+      // Forcefully prompt Google One Tap account chooser sheet
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Fallback to OAuth popup if One Tap is blocked by browser settings
+          // Fallback to direct Google OAuth Popup if One Tap is blocked or dismissed
           triggerOAuthPopup();
         }
       });
     } else {
-      alert("Google services are loading. Please refresh the page.");
+      triggerOAuthPopup();
     }
   } else if (provider === 'facebook') {
     triggerCleanLoginModal('Facebook');
@@ -55,10 +58,17 @@ function openAccountPicker(provider) {
 
 // Fallback Google OAuth Popup Window
 function triggerOAuthPopup() {
-  const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=token&scope=email%20profile`;
-  const popup = window.open(oauthUrl, 'GoogleLogin', 'width=500,height=600');
+  const redirectUri = window.location.origin;
+  const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=email%20profile`;
   
-  // Listen for popup message or check storage if redirected
+  const width = 500;
+  const height = 600;
+  const left = (window.innerWidth - width) / 2;
+  const top = (window.innerHeight - height) / 2;
+  
+  const popup = window.open(oauthUrl, 'GoogleLogin', `width=${width},height=${height},top=${top},left=${left}`);
+  
+  // Listen for popup message or storage changes
   window.addEventListener('message', (event) => {
     if (event.data && event.data.credential) {
       handleGoogleResponse({ credential: event.data.credential });
@@ -127,8 +137,17 @@ function saveUserAndSyncUI(user) {
   
   const nameDisp = document.getElementById('profileNameDisplay');
   const handleDisp = document.getElementById('profileHandleDisplay');
+  const avatarBig = document.getElementById('profileAvatarBig');
+  
   if (nameDisp) nameDisp.innerText = user.name;
   if (handleDisp) handleDisp.innerText = user.handle;
+  if (avatarBig) {
+    if (user.avatar.startsWith('http')) {
+      avatarBig.innerHTML = `<img src="${user.avatar}" class="w-full h-full rounded-full object-cover">`;
+    } else {
+      avatarBig.innerText = user.avatar;
+    }
+  }
   
   hideAuthOverlay();
 }
@@ -183,13 +202,15 @@ function updateHeaderUI(user) {
   const headerContainer = document.getElementById('navbarHeader');
   if (!headerContainer) return;
 
-  const displayName = user ? user.name : 'Makki';
-  const avatarLetter = user ? user.avatar : 'M';
+  const displayName = user ? user.name : 'Guest';
+  const avatarContent = user 
+    ? (user.avatar.startsWith('http') ? `<img src="${user.avatar}" class="w-full h-full rounded-full object-cover">` : user.avatar) 
+    : 'M';
 
   if (user) {
     headerContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm">${avatarLetter}</div>
+        <div class="w-8 h-8 rounded-full bg-sky-500 text-black font-bold flex items-center justify-center text-sm overflow-hidden">${avatarContent}</div>
         <span class="text-white font-semibold text-xs sm:text-sm truncate max-w-[120px]">${displayName}</span>
       </div>
       <div class="flex items-center gap-2">
