@@ -1,11 +1,10 @@
-/* PkTweed - Ultimate Google Native Auth Engine (auth.js) - v20.1 */
+/* PkTweed - Ultimate Google Native Auth Engine (auth.js) - v20.3 */
 
 let currentUser = null;
-const GOOGLE_CLIENT_ID = "848310764443-inr2acmajlba7d0q492a9ha59kgphi2i.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "375999162862-6ui3p177o2qv6p461t5o78jj15n55mmd.apps.googleusercontent.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   checkLocalAuth();
-  // Small delay to ensure Google Identity Services SDK script is fully loaded
   setTimeout(initGoogleOneTapSDK, 500);
 });
 
@@ -15,12 +14,11 @@ function initGoogleOneTapSDK() {
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: handleGoogleResponse,
-      auto_select: true, // Auto-prompts active saved Google account on mobile/web
+      auto_select: true,
       cancel_on_tap_outside: false,
       context: 'signin'
     });
 
-    // Automatically trigger Google One Tap floating sheet
     try {
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()) {
@@ -39,10 +37,8 @@ function initGoogleOneTapSDK() {
 function openAccountPicker(provider) {
   if (provider === 'google') {
     if (window.google && window.google.accounts) {
-      // Forcefully prompt Google One Tap account chooser sheet
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Fallback to direct Google OAuth Popup if One Tap is blocked or dismissed
           triggerOAuthPopup();
         }
       });
@@ -58,7 +54,7 @@ function openAccountPicker(provider) {
 
 // Fallback Google OAuth Popup Window
 function triggerOAuthPopup() {
-  const redirectUri = window.location.origin;
+  const redirectUri = "https://makkipktwitter.vercel.app";
   const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=email%20profile`;
   
   const width = 500;
@@ -68,7 +64,6 @@ function triggerOAuthPopup() {
   
   const popup = window.open(oauthUrl, 'GoogleLogin', `width=${width},height=${height},top=${top},left=${left}`);
   
-  // Listen for popup message or storage changes
   window.addEventListener('message', (event) => {
     if (event.data && event.data.credential) {
       handleGoogleResponse({ credential: event.data.credential });
