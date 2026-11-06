@@ -1,4 +1,4 @@
-/* PkTweed - UI Components (components.js) - Stable Clean Version v12.1 */
+/* PkTweed - UI Components (components.js) - Fixed Version */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -415,4 +415,7 @@ function toggleBookmark(btn, pid) {
   } else {
     icon.classList.replace('fas', 'far');
     btn.classList.remove('text-sky-400');
-    savedPostsData = savedPostsData.filter(p => p.id !== clea
+    savedPostsData = savedPostsData.filter(p => p.id !== cleanId);
+  }
+    }
+    
