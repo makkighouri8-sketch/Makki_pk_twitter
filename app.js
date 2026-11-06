@@ -84,7 +84,10 @@ function switchPage(pageID) {
   try {
     ['feed', 'explore', 'notif', 'profile'].forEach(p => {
       const pageEl = document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1));
-      if (pageEl) pageEl.classList.add('hidden');
+      if (pageEl) {
+        pageEl.classList.add('hidden');
+        pageEl.style.display = 'none';
+      }
       
       const navBtn = document.getElementById('nav' + p.charAt(0).toUpperCase() + p.slice(1));
       if (navBtn) {
@@ -94,7 +97,10 @@ function switchPage(pageID) {
     });
 
     const targetPage = document.getElementById('page' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
-    if (targetPage) targetPage.classList.remove('hidden');
+    if (targetPage) {
+      targetPage.classList.remove('hidden');
+      targetPage.style.display = 'block';
+    }
 
     const activeNav = document.getElementById('nav' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
     if (activeNav) {
@@ -119,12 +125,16 @@ function switchProfileTab(tab) {
 
   if (tab === 'myPosts') {
     postsCont.classList.remove('hidden');
+    postsCont.style.display = 'block';
     savedCont.classList.add('hidden');
+    savedCont.style.display = 'none';
     if (btnPosts) btnPosts.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold';
     if (btnSaved) btnSaved.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
   } else {
     savedCont.classList.remove('hidden');
+    savedCont.style.display = 'block';
     postsCont.classList.add('hidden');
+    postsCont.style.display = 'none';
     if (btnSaved) btnSaved.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold';
     if (btnPosts) btnPosts.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
     if (typeof renderSavedBookmarks === 'function') renderSavedBookmarks(); 
@@ -189,5 +199,4 @@ function askTringoAI() {
     chatBox.appendChild(aDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
   }, 500);
-        }
-          
+}
