@@ -1,4 +1,4 @@
-/* PkTweed - UI Components (components.js) - Borderless Clean X-Style & Profile Edit Version */
+/* PkTweed - UI Components (components.js) - Stable Clean Version v12.1 */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -271,14 +271,12 @@ function saveProfileChanges() {
     return;
   }
 
-  // Save to localStorage
   localStorage.setItem('pktweed_profile_name', newName);
   localStorage.setItem('pktweed_profile_handle', newHandle);
   if (newAvatar) localStorage.setItem('pktweed_profile_avatar', newAvatar);
   localStorage.setItem('pktweed_profile_bio', newBio);
   localStorage.setItem('pktweed_followers', followersCount);
 
-  // Update UI Elements instantly
   document.getElementById('profileNameDisplay').innerText = newName;
   document.getElementById('profileHandleDisplay').innerText = newHandle;
   document.getElementById('profileBioDisplay').innerText = newBio;
@@ -294,7 +292,6 @@ function saveProfileChanges() {
     if (headerAvatar) headerAvatar.innerHTML = `<img src="${newAvatar}" class="w-full h-full rounded-full object-cover">`;
   }
 
-  // Tringo AI 10k Followers Green Tick Algorithm Evaluation
   const tickElement = document.getElementById('profileGreenTick');
   if (followersCount >= 10000) {
     if (tickElement) tickElement.classList.remove('hidden');
@@ -422,4 +419,6 @@ function toggleBookmark(btn, pid) {
 
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
-    btn.
+    btn.classList.add('text-sky-400');
+    if (postElement && !savedPostsData.some(p => p.id === cleanId)) {
+      savedPostsData.push({ id: cleanId, 
