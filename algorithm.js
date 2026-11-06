@@ -1,4 +1,4 @@
-/* PkTweed - X-Style Algorithm & Time Engine (algorithm.js) - v1.0 */
+/* PkTweed - Ultimate Hybrid TikTok + X Algorithm & Time Engine (algorithm.js) - v11.0 */
 
 function calculateTimeAgo(timestamp) {
   if (!timestamp) return 'Just now';
@@ -12,14 +12,42 @@ function calculateTimeAgo(timestamp) {
   return days + 'd ago';
 }
 
-// X-Style Smart Ranking Algorithm with Tringo AI Integration
+// Hybrid TikTok + X Smart Ranking Algorithm with Tringo AI Integration
 function sortPostsByXAlgorithm(posts) {
+  if (!posts || posts.length === 0) return [];
+
+  const now = new Date().getTime();
+
   return posts.sort((a, b) => {
-    const scoreA = (a.likes * 2) + (a.retweets * 3) + ((a.comments_count || 0) * 4);
-    const scoreB = (b.likes * 2) + (b.retweets * 3) + ((b.comments_count || 0) * 4);
-    const timeA = new Date(a.created_at || Date.now()).getTime();
-    const timeB = new Date(b.created_at || Date.now()).getTime();
-    return (scoreB * 10 + timeB) - (scoreA * 10 + timeA);
+    // Engagement Weights (X-Style + TikTok Momentum)
+    const likesA = a.likes || 0;
+    const likesB = b.likes || 0;
+    const retweetsA = a.retweets || a.retweeds || 0;
+    const retweetsB = b.retweets || b.retweeds || 0;
+    const commentsA = a.comments_count || a.replies || 0;
+    const commentsB = b.comments_count || b.replies || 0;
+
+    const scoreA = (likesA * 2) + (retweetsA * 3) + (commentsA * 4);
+    const scoreB = (likesB * 2) + (retweetsB * 3) + (commentsB * 4);
+
+    // Recency & Age Gravity (TikTok Fast-paced decay factor)
+    const timeA = new Date(a.created_at || a.timestamp || now).getTime();
+    const timeB = new Date(b.created_at || b.timestamp || now).getTime();
+    
+    const ageHoursA = Math.max(1, (now - timeA) / (1000 * 60 * 60));
+    const ageHoursB = Math.max(1, (now - timeB) / (1000 * 60 * 60));
+
+    // Pakistan Trend Boost factor
+    let trendMultiplierA = 1.0;
+    let trendMultiplierB = 1.0;
+    if (a.content && (a.content.includes('#') || a.content.toLowerCase().includes('pakistan'))) trendMultiplierA = 1.3;
+    if (b.content && (b.content.includes('#') || b.content.toLowerCase().includes('pakistan'))) trendMultiplierB = 1.3;
+
+    // Final Hybrid Formula (Engagement * Trend Boost / Recency Decay)
+    const finalScoreA = ((scoreA * trendMultiplierA * 100) / Math.pow(ageHoursA + 2, 1.4));
+    const finalScoreB = ((scoreB * trendMultiplierB * 100) / Math.pow(ageHoursB + 2, 1.4));
+
+    return finalScoreB - finalScoreA;
   });
 }
 
@@ -39,4 +67,4 @@ function evaluateCreatorMilestone(followerCount) {
     discountOffer: 'Unlock at 10k Followers',
     status: 'Growing'
   };
-}
+      }
