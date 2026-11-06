@@ -105,9 +105,9 @@
       </div>
 
       <div class="space-y-4">
-        <input type="text" id="authEmail" placeholder="Email or Username" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500 shadow-inner">
+        <input type="text" id="authEmail" placeholder="Email or Username" autocomplete="off" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500 shadow-inner">
         <div class="relative">
-          <input type="password" id="authPassword" placeholder="Password" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500 shadow-inner pr-10">
+          <input type="password" id="authPassword" placeholder="Password" autocomplete="new-password" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500 shadow-inner pr-10">
           <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-300">
             <i id="eyeIcon" class="far fa-eye-slash text-base"></i>
           </button>
@@ -159,7 +159,7 @@
       <section id="pageExplore" class="page-view hidden p-4 w-full">
         <div class="relative mb-4">
           <i class="fas fa-search absolute left-4 top-3.5 text-gray-500"></i>
-          <input type="text" placeholder="Search PkTweed..." class="w-full bg-gray-900 border border-gray-800 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-sky-500 text-sm">
+          <input type="text" placeholder="Search PkTweed..." autocomplete="off" class="w-full bg-gray-900 border border-gray-800 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-sky-500 text-sm">
         </div>
         <h2 class="font-extrabold text-lg mb-3">Trending in Pakistan 🇵🇰</h2>
       </section>
@@ -223,7 +223,7 @@
           <div class="bg-gray-900/60 p-2 rounded-xl border border-gray-800"><strong class="text-sky-400">Tringo AI:</strong> Hello Makki! Systems running at peak performance.</div>
         </div>
         <div class="flex gap-2">
-          <input type="text" id="tringoPromptInput" placeholder="Ask Tringo AI..." class="w-full bg-gray-900 border border-gray-800 rounded-full px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+          <input type="text" id="tringoPromptInput" placeholder="Ask Tringo AI..." autocomplete="off" class="w-full bg-gray-900 border border-gray-800 rounded-full px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
           <button onclick="askTringoAI()" class="bg-sky-500 text-black font-bold px-4 py-2 rounded-full text-xs hover:bg-sky-400">Ask</button>
         </div>
       </div>
@@ -256,15 +256,15 @@
         <div class="space-y-3 text-xs">
           <div>
             <label class="text-gray-400 block mb-1">Name</label>
-            <input type="text" id="editNameInput" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500">
+            <input type="text" id="editNameInput" autocomplete="off" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500">
           </div>
           <div>
             <label class="text-gray-400 block mb-1">Username / Handle</label>
-            <input type="text" id="editHandleInput" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500">
+            <input type="text" id="editHandleInput" autocomplete="off" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500">
           </div>
           <div>
             <label class="text-gray-400 block mb-1">Profile Picture URL (Image Link)</label>
-            <input type="text" id="editAvatarInput" placeholder="Paste image URL here..." class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500">
+            <input type="text" id="editAvatarInput" placeholder="Paste image URL here..." autocomplete="off" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500">
           </div>
           <div>
             <label class="text-gray-400 block mb-1">Bio</label>
@@ -315,5 +315,5 @@
   <script src="components.js?v=12.0"></script>
   <script src="app.js?v=12.0"></script>
 </body>
-        </html>
+  </html>
         
