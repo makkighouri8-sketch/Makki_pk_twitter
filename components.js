@@ -1,4 +1,4 @@
-/* PkTweed - UI Components (components.js) - Borderless Clean X-Style Version v12.0 */
+/* PkTweed - UI Components (components.js) - Borderless Clean X-Style & Profile Edit Version */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -9,12 +9,63 @@ let notificationsData = [
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof checkLocalAuth === 'function') checkLocalAuth();
+  loadSavedProfileToUI();
   loadSmartFeed();
 });
 
 function escapeHTML(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// Load saved profile customization from localStorage on start
+function loadSavedProfileToUI() {
+  const savedName = localStorage.getItem('pktweed_profile_name');
+  const savedHandle = localStorage.getItem('pktweed_profile_handle');
+  const savedAvatar = localStorage.getItem('pktweed_profile_avatar');
+  const savedBio = localStorage.getItem('pktweed_profile_bio');
+  const savedFollowers = parseInt(localStorage.getItem('pktweed_followers') || '2500');
+
+  if (savedName) {
+    const nameDisp = document.getElementById('profileNameDisplay');
+    const headerUserName = document.getElementById('headerUserName');
+    if (nameDisp) nameDisp.innerText = savedName;
+    if (headerUserName) headerUserName.innerText = savedName;
+  }
+
+  if (savedHandle) {
+    const handleDisp = document.getElementById('profileHandleDisplay');
+    if (handleDisp) handleDisp.innerText = savedHandle;
+  }
+
+  if (savedBio) {
+    const bioDisp = document.getElementById('profileBioDisplay');
+    if (bioDisp) bioDisp.innerText = savedBio;
+  }
+
+  if (savedAvatar) {
+    const avatarBig = document.getElementById('profileAvatarBig');
+    const headerAvatar = document.getElementById('headerUserAvatar');
+    if (avatarBig) {
+      avatarBig.innerHTML = `<img src="${savedAvatar}" class="w-full h-full rounded-full object-cover">`;
+    }
+    if (headerAvatar) {
+      headerAvatar.innerHTML = `<img src="${savedAvatar}" class="w-full h-full rounded-full object-cover">`;
+    }
+  }
+
+  const followersCountEl = document.getElementById('profileFollowersCount');
+  if (followersCountEl) followersCountEl.innerText = savedFollowers;
+
+  // Auto Green Tick check if followers >= 10,000
+  const tickElement = document.getElementById('profileGreenTick');
+  if (tickElement) {
+    if (savedFollowers >= 10000) {
+      tickElement.classList.remove('hidden');
+    } else {
+      tickElement.classList.add('hidden');
+    }
+  }
 }
 
 function loadSmartFeed() {
@@ -54,7 +105,6 @@ function renderPostElement(post, prepend = true) {
   if (!timeline || !post) return;
 
   const article = document.createElement('article');
-  // Borderless X-Style layout (Pure black background with clean bottom line)
   article.className = 'p-4 bg-black border-b border-gray-900 hover:bg-gray-950/40 transition-all duration-200 post-item';
   article.id = 'post-' + post.id;
 
@@ -64,16 +114,17 @@ function renderPostElement(post, prepend = true) {
   }
 
   const timeText = typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now';
-  const userName = post.user_name || 'Makki';
+  const currentUserName = localStorage.getItem('pktweed_profile_name') || post.user_name || 'Makki';
+  const followersCount = parseInt(localStorage.getItem('pktweed_followers') || '2500');
+  const showTick = (currentUserName === 'Makki' && followersCount >= 10000) || post.verified;
 
   article.innerHTML = `
     <div class="flex gap-3">
-      <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
-        ${escapeHTML(userName[0])}
+      <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md overflow-hidden">
+        ${escapeHTML(currentUserName[0])}
       </div>
       <div class="w-full relative">
         
-        <!-- 3-Dots Menu Button on Top Right -->
         <div class="absolute right-0 top-0">
           <button onclick="togglePostDropdown('${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
             <i class="fas fa-ellipsis-v"></i>
@@ -86,8 +137,8 @@ function renderPostElement(post, prepend = true) {
         </div>
 
         <div class="flex items-center gap-2 pr-8">
-          <span class="font-bold text-white">${escapeHTML(userName)}</span>
-          <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+          <span class="font-bold text-white">${escapeHTML(currentUserName)}</span>
+          ${showTick ? '<i class="fas fa-check-circle text-sky-400 text-xs"></i>' : ''}
           <span class="text-gray-500 text-sm">· ${timeText}</span>
         </div>
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
@@ -123,7 +174,7 @@ function renderProfilePosts(posts) {
   const profContainer = document.getElementById('profPostsContainer');
   if (!profContainer) return;
 
-  const myPosts = posts.filter(p => p && p.user_name === 'Makki');
+  const myPosts = posts.filter(p => p);
 
   if (!myPosts || myPosts.length === 0) {
     profContainer.innerHTML = `<p class="text-gray-500 text-sm py-6">Your published tweeds will appear here.</p>`;
@@ -142,11 +193,14 @@ function renderProfilePosts(posts) {
     }
 
     const timeText = typeof calculateTimeAgo === 'function' ? calculateTimeAgo(post.created_at) : 'Just now';
+    const currentUserName = localStorage.getItem('pktweed_profile_name') || post.user_name || 'Makki';
+    const followersCount = parseInt(localStorage.getItem('pktweed_followers') || '2500');
+    const showTick = (currentUserName === 'Makki' && followersCount >= 10000) || post.verified;
 
     article.innerHTML = `
       <div class="flex gap-3">
-        <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md">
-          ${escapeHTML(post.user_name[0])}
+        <div class="w-10 h-10 rounded-full bg-sky-500 flex-shrink-0 flex items-center justify-center font-bold text-black shadow-md overflow-hidden">
+          ${escapeHTML(currentUserName[0])}
         </div>
         <div class="w-full relative">
           
@@ -162,8 +216,8 @@ function renderProfilePosts(posts) {
           </div>
 
           <div class="flex items-center gap-2 pr-8">
-            <span class="font-bold text-white">${escapeHTML(post.user_name)}</span>
-            <i class="fas fa-check-circle text-sky-400 text-xs"></i>
+            <span class="font-bold text-white">${escapeHTML(currentUserName)}</span>
+            ${showTick ? '<i class="fas fa-check-circle text-sky-400 text-xs"></i>' : ''}
             <span class="text-gray-500 text-sm">· ${timeText}</span>
           </div>
           <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
@@ -190,6 +244,68 @@ function renderProfilePosts(posts) {
     `;
     profContainer.appendChild(article);
   });
+}
+
+// PROFILE EDIT MODAL HANDLERS
+function openEditProfileModal() {
+  document.getElementById('editProfileModal')?.classList.remove('hidden');
+  document.getElementById('editNameInput').value = document.getElementById('profileNameDisplay')?.innerText || 'Makki';
+  document.getElementById('editHandleInput').value = document.getElementById('profileHandleDisplay')?.innerText || '@makki';
+  document.getElementById('editBioInput').value = document.getElementById('profileBioDisplay')?.innerText || 'Full Stack Developer & Tech Entrepreneur from Multan 🇵🇰';
+  document.getElementById('editFollowersInput').value = localStorage.getItem('pktweed_followers') || '2500';
+}
+
+function closeEditProfileModal() {
+  document.getElementById('editProfileModal')?.classList.add('hidden');
+}
+
+function saveProfileChanges() {
+  const newName = document.getElementById('editNameInput').value.trim();
+  const newHandle = document.getElementById('editHandleInput').value.trim();
+  const newAvatar = document.getElementById('editAvatarInput').value.trim();
+  const newBio = document.getElementById('editBioInput').value.trim();
+  const followersCount = parseInt(document.getElementById('editFollowersInput').value) || 0;
+
+  if (!newName) {
+    alert('Name cannot be empty!');
+    return;
+  }
+
+  // Save to localStorage
+  localStorage.setItem('pktweed_profile_name', newName);
+  localStorage.setItem('pktweed_profile_handle', newHandle);
+  if (newAvatar) localStorage.setItem('pktweed_profile_avatar', newAvatar);
+  localStorage.setItem('pktweed_profile_bio', newBio);
+  localStorage.setItem('pktweed_followers', followersCount);
+
+  // Update UI Elements instantly
+  document.getElementById('profileNameDisplay').innerText = newName;
+  document.getElementById('profileHandleDisplay').innerText = newHandle;
+  document.getElementById('profileBioDisplay').innerText = newBio;
+  document.getElementById('profileFollowersCount').innerText = followersCount;
+  
+  const headerUserName = document.getElementById('headerUserName');
+  if (headerUserName) headerUserName.innerText = newName;
+
+  if (newAvatar) {
+    const avatarBig = document.getElementById('profileAvatarBig');
+    const headerAvatar = document.getElementById('headerUserAvatar');
+    if (avatarBig) avatarBig.innerHTML = `<img src="${newAvatar}" class="w-full h-full rounded-full object-cover">`;
+    if (headerAvatar) headerAvatar.innerHTML = `<img src="${newAvatar}" class="w-full h-full rounded-full object-cover">`;
+  }
+
+  // Tringo AI 10k Followers Green Tick Algorithm Evaluation
+  const tickElement = document.getElementById('profileGreenTick');
+  if (followersCount >= 10000) {
+    if (tickElement) tickElement.classList.remove('hidden');
+    alert(`🎉 Mubarak ho! Followers ${followersCount} ho gaye hain. Tringo AI ne Green Tick 🟢 activate kar diya hai!`);
+  } else {
+    if (tickElement) tickElement.classList.add('hidden');
+    alert('Profile updated successfully! (Green Tick unlocks at 10,000 followers 🚀)');
+  }
+
+  closeEditProfileModal();
+  loadSmartFeed();
 }
 
 function togglePostDropdown(postId) {
@@ -222,10 +338,13 @@ function createNewModalPost() {
   const textVal = inputEl ? inputEl.value : '';
   if (!textVal.trim() && !activeMedia) return;
 
+  const currentUserName = localStorage.getItem('pktweed_profile_name') || 'Makki';
+  const currentHandle = localStorage.getItem('pktweed_profile_handle') || '@makki';
+
   const newPostData = {
     id: 'post_' + Date.now(),
-    user_name: 'Makki',
-    user_handle: '@makki',
+    user_name: currentUserName,
+    user_handle: currentHandle,
     content: textVal,
     media_url: activeMedia || null,
     likes: 0,
@@ -303,125 +422,4 @@ function toggleBookmark(btn, pid) {
 
   if (icon.classList.contains('far')) {
     icon.classList.replace('far', 'fas');
-    btn.classList.add('text-sky-400');
-    if (postElement && !savedPostsData.some(p => p.id === cleanId)) {
-      savedPostsData.push({ id: cleanId, html: postElement.innerHTML });
-    }
-  } else {
-    icon.classList.replace('fas', 'far');
-    btn.classList.remove('text-sky-400');
-    savedPostsData = savedPostsData.filter(p => p.id !== cleanId);
-  }
-}
-
-function toggleCommentBox(id) {
-  document.getElementById('commentSection-' + id)?.classList.toggle('hidden');
-}
-
-function addComment(id) {
-  const input = document.getElementById('cm-input-' + id);
-  const cntEl = document.getElementById('cm-cnt-' + id);
-  const list = document.getElementById('cm-list-' + id);
-  if (!input || !input.value.trim() || !list) return;
-
-  const div = document.createElement('div');
-  div.className = 'bg-gray-900/40 p-2 rounded-xl';
-  div.innerHTML = `<strong class="text-sky-400">@makki:</strong> ${escapeHTML(input.value)}`;
-  list.appendChild(div);
-
-  let currentComments = 0;
-  if (cntEl) {
-    currentComments = parseInt(cntEl.innerText || 0) + 1;
-    cntEl.innerText = currentComments;
-  }
-  updatePostInStorage(id, p => p.comments_count = currentComments);
-  input.value = '';
-}
-
-function sharePost() {
-  if (navigator.share) {
-    navigator.share({ title: 'PkTweed', url: window.location.href }).catch(() => {});
-  } else {
-    alert('Link copied to clipboard!');
-  }
-}
-
-function switchPage(pageID) {
-  ['feed', 'explore', 'notif', 'profile'].forEach(p => {
-    document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1))?.classList.add('hidden');
-    const navBtn = document.getElementById('nav' + p.charAt(0).toUpperCase() + p.slice(1));
-    if (navBtn) {
-      navBtn.classList.remove('text-sky-400');
-      navBtn.classList.add('text-gray-400');
-    }
-  });
-
-  document.getElementById('page' + pageID.charAt(0).toUpperCase() + pageID.slice(1))?.classList.remove('hidden');
-  const activeNav = document.getElementById('nav' + pageID.charAt(0).toUpperCase() + pageID.slice(1));
-  if (activeNav) {
-    activeNav.classList.remove('text-gray-400');
-    activeNav.classList.add('text-sky-400');
-  }
-  window.scrollTo(0, 0);
-}
-
-function switchProfileTab(tab) {
-  const postsCont = document.getElementById('profPostsContainer');
-  const savedCont = document.getElementById('profSavedContainer');
-  const btnPosts = document.getElementById('pTabPosts');
-  const btnSaved = document.getElementById('pTabSaved');
-  if (!postsCont || !savedCont) return;
-
-  if (tab === 'myPosts') {
-    postsCont.classList.remove('hidden');
-    savedCont.classList.add('hidden');
-    if (btnPosts) btnPosts.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold';
-    if (btnSaved) btnSaved.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
-  } else {
-    savedCont.classList.remove('hidden');
-    postsCont.classList.add('hidden');
-    if (btnSaved) btnSaved.className = 'flex-1 py-3 border-b-2 border-sky-400 text-sky-400 font-bold';
-    if (btnPosts) btnPosts.className = 'flex-1 py-3 text-gray-500 border-b-2 border-transparent hover:text-white';
-    renderSavedBookmarks();
-  }
-}
-
-function openTringoModal() { document.getElementById('tringoModal')?.classList.remove('hidden'); }
-function closeTringoModal() { document.getElementById('tringoModal')?.classList.add('hidden'); }
-
-function askTringoAI() {
-  const input = document.getElementById('tringoPromptInput');
-  const chatBox = document.getElementById('tringoChatBox');
-  if (!input || !input.value.trim() || !chatBox) return;
-
-  const userMsg = input.value;
-  chatBox.innerHTML += `<div class="bg-gray-900 p-2 rounded-xl text-right text-gray-200 border border-gray-800"><strong>You:</strong> ${escapeHTML(userMsg)}</div>`;
-  input.value = '';
-
-  setTimeout(() => {
-    chatBox.innerHTML += `<div class="bg-sky-950/40 p-2 rounded-xl border border-sky-900 text-sky-300"><strong>Tringo AI:</strong> Systems running smoothly! All algorithms and monetization hooks are fully active.</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }, 500);
-}
-
-function openPostModal() { document.getElementById('postModal')?.classList.remove('hidden'); }
-function closePostModal() { document.getElementById('postModal')?.classList.add('hidden'); removeModalMedia(); }
-
-function processModalMedia(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    activeMedia = evt.target.result;
-    document.getElementById('modalMediaBox')?.classList.remove('hidden');
-    const img = document.getElementById('modalImgPrev');
-    if (img) img.src = activeMedia;
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeModalMedia() {
-  activeMedia = null;
-  document.getElementById('modalMediaBox')?.classList.add('hidden');
-            }
-            
+    btn.
