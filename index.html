@@ -7,13 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Official Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <!-- Supabase JS SDK Loaded First for Instant Availability -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    /* Full Dark Mode & Deep Neon Stylesheet */
     html, body {
       background-color: #000000 !important;
       color: #ffffff;
@@ -49,7 +46,6 @@
       background-color: rgba(0, 0, 0, 0.85) !important;
     }
 
-    /* Neon Cyan Waves Pulse Animation for (+) Button & Tringo AI */
     @keyframes neonCyanPulse {
       0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.8), 0 0 0 0 rgba(14, 165, 233, 0.6); }
       70% { box-shadow: 0 0 0 15px rgba(0, 240, 255, 0), 0 0 0 25px rgba(14, 165, 233, 0); }
@@ -57,7 +53,6 @@
     }
     .neon-waves-btn { animation: neonCyanPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); }
 
-    /* Modals Deep Dark Theme Styling */
     #tringoModal > div, #postModal > div, #walletModal > div, #accountPickerModal > div, #editProfileModal > div {
       background: rgba(10, 10, 10, 0.98);
       border: 1px solid rgba(56, 189, 248, 0.2);
@@ -74,11 +69,6 @@
     ::selection { background: #0ea5e9; color: #000000; }
     button, article button { outline: none !important; cursor: pointer; transition: transform 0.1s ease, background-color 0.2s ease; }
     button:active { transform: scale(0.96); }
-
-    .filter-normal { filter: none; }
-    .filter-vibrant { filter: saturate(1.8) contrast(1.1); }
-    .filter-cyber { filter: hue-rotate(180deg) saturate(2); }
-    .filter-mono { filter: grayscale(100%) contrast(1.2); }
   </style>
 </head>
 <body class="bg-black text-white antialiased min-h-screen pb-24 select-none overflow-x-hidden">
@@ -86,8 +76,6 @@
   <!-- FULL DARK LOGIN OVERLAY -->
   <div id="authOverlay" class="fixed inset-0 bg-black text-white z-[999] flex flex-col justify-center items-center p-6 text-center transition-opacity duration-500">
     <div class="max-w-md w-full bg-gray-950 border border-gray-800 p-8 rounded-3xl relative text-left shadow-2xl">
-      
-      <!-- Brand Logo Header -->
       <div class="text-center mb-6">
         <div class="flex items-center justify-center gap-2 mb-2">
           <svg class="w-10 h-10 text-sky-400 filter drop-shadow-[0_0_10px_#38bdf8]" viewBox="0 0 24 24" fill="currentColor">
@@ -98,7 +86,6 @@
         <p class="text-xs text-gray-400">Join Pakistan's Next-Gen Social Ecosystem 🇵🇰</p>
       </div>
 
-      <!-- Social Login Buttons -->
       <div class="space-y-3">
         <button onclick="openAccountPicker('google')" class="w-full flex items-center justify-center gap-3 bg-gray-900 border border-gray-700 text-white font-semibold py-3.5 px-4 rounded-xl hover:bg-gray-800 transition shadow-md text-sm cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24">
@@ -109,41 +96,22 @@
           </svg>
           Continue with Google
         </button>
-
-        <button onclick="openAccountPicker('facebook')" class="w-full flex items-center justify-center gap-3 bg-gray-900 border border-gray-700 text-white font-semibold py-3.5 px-4 rounded-xl hover:bg-gray-800 transition shadow-md text-sm cursor-pointer">
-          <i class="fab fa-facebook-f text-lg text-blue-500"></i>
-          Continue with Facebook
-        </button>
-
-        <button onclick="openAccountPicker('tiktok')" class="w-full flex items-center justify-center gap-3 bg-gray-900 border border-gray-700 text-white font-semibold py-3.5 px-4 rounded-xl hover:bg-gray-800 transition shadow-md text-sm cursor-pointer">
-          <i class="fab fa-tiktok text-lg text-cyan-400"></i>
-          Continue with TikTok
-        </button>
       </div>
 
-      <!-- OR Divider -->
       <div class="flex items-center my-6 text-gray-500 text-xs">
         <div class="flex-1 border-t border-gray-800"></div>
         <span class="px-4 font-semibold text-gray-400">OR EMAIL</span>
         <div class="flex-1 border-t border-gray-800"></div>
       </div>
 
-      <!-- Email & Password Form -->
       <div class="space-y-4">
         <input type="text" id="authEmail" placeholder="Email or Username" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500 shadow-inner">
-        
         <div class="relative">
           <input type="password" id="authPassword" placeholder="Password" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500 shadow-inner pr-10">
           <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3.5 text-gray-500 hover:text-gray-300">
             <i id="eyeIcon" class="far fa-eye-slash text-base"></i>
           </button>
         </div>
-        
-        <div class="text-left flex justify-between items-center text-xs">
-          <a href="#" onclick="handleForgotPassword()" class="font-medium text-sky-400 hover:underline">Forgot Password?</a>
-          <a href="#" onclick="handleEmailLogin()" class="font-medium text-gray-400 hover:underline">Quick Sign Up</a>
-        </div>
-
         <button onclick="handleEmailLogin()" class="w-full bg-sky-500 hover:bg-sky-400 text-black font-extrabold py-3.5 rounded-xl text-sm transition shadow-lg cursor-pointer mt-2">Log in to PkTweed</button>
       </div>
     </div>
@@ -157,9 +125,7 @@
         <button onclick="closeAccountPicker()" class="text-gray-400 hover:text-white"><i class="fas fa-times text-base"></i></button>
       </div>
       <p class="text-xs text-gray-400 mb-3">Select your account to continue to PkTweed:</p>
-      
       <div id="accountsListContainer" class="space-y-2.5 max-h-64 overflow-y-auto mb-3 pr-1"></div>
-
       <button onclick="addNewGoogleAccount()" class="w-full border border-dashed border-gray-700 hover:border-sky-500 text-sky-400 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 bg-gray-900/50">
         <i class="fas fa-plus"></i> Use another account
       </button>
@@ -196,16 +162,6 @@
           <input type="text" placeholder="Search PkTweed..." class="w-full bg-gray-900 border border-gray-800 rounded-full py-3 pl-12 pr-4 text-white focus:outline-none focus:border-sky-500 text-sm">
         </div>
         <h2 class="font-extrabold text-lg mb-3">Trending in Pakistan 🇵🇰</h2>
-        <div class="space-y-3">
-          <div class="bg-gray-900/60 border border-gray-800 p-3.5 rounded-xl flex justify-between items-center">
-            <div>
-              <p class="text-xs text-gray-500">Technology · Trending</p>
-              <p class="font-bold text-sm text-sky-400">#PkTweedGlobal</p>
-              <p class="text-xs text-gray-400 mt-0.5">128.4K Tweeds</p>
-            </div>
-            <span class="text-sky-400 text-xl font-bold">▲</span>
-          </div>
-        </div>
       </section>
 
       <!-- NOTIFICATIONS PAGE -->
@@ -248,15 +204,12 @@
 
     </main>
 
-    <!-- HIDDEN REAL CAMERA INPUT -->
-    <input type="file" id="directCameraInput" accept="image/*,video/*" capture="environment" class="hidden" onchange="handleDirectCameraCapture(event)">
-
     <!-- FLOATING (+) ACTION BUTTON -->
-    <button onclick="triggerDirectCamera()" class="fixed bottom-20 right-5 sm:right-[calc(50%-16rem)] z-40 w-14 h-14 bg-sky-500 hover:bg-sky-400 rounded-full text-black font-extrabold flex items-center justify-center shadow-2xl neon-waves-btn transition-transform active:scale-95 border border-white/90">
+    <button onclick="openPostModal()" class="fixed bottom-20 right-5 sm:right-[calc(50%-16rem)] z-40 w-14 h-14 bg-sky-500 hover:bg-sky-400 rounded-full text-black font-extrabold flex items-center justify-center shadow-2xl neon-waves-btn transition-transform active:scale-95 border border-white/90">
       <i class="fas fa-plus text-2xl"></i>
     </button>
 
-    <!-- TRINGO AI DASHBOARD MODAL -->
+    <!-- TRINGO AI MODAL -->
     <div id="tringoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
       <div class="bg-gray-950 border border-gray-800 w-full max-w-md rounded-2xl p-4 shadow-2xl relative">
         <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-3">
@@ -292,7 +245,7 @@
       </div>
     </div>
 
-    <!-- EDIT PROFILE MODAL (FIXED & COMPLETED) -->
+    <!-- EDIT PROFILE MODAL -->
     <div id="editProfileModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1100] hidden flex justify-center items-center p-4">
       <div class="bg-gray-950 border border-gray-800 w-full max-w-md rounded-2xl p-5 shadow-2xl relative text-left">
         <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
@@ -321,5 +274,46 @@
             <label class="text-gray-400 block mb-1">Followers Count (For Green Tick Testing)</label>
             <input type="number" id="editFollowersInput" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-sky-500" value="2500">
           </div>
+          <button onclick="saveProfileChanges()" class="w-full bg-sky-500 hover:bg-sky-400 text-black font-extrabold py-3 rounded-xl text-sm transition mt-2">Save Changes</button>
+        </div>
+      </div>
+    </div>
 
-          <button onclick="saveProfileChanges()" class="w-full bg-sky-500 hover:bg-sky-400 text-black font-extrabold py-3 rounded-xl text-sm transition mt-2">Save Changes</butto
+    <!-- FIXED BOTTOM NAV BAR -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl border-t border-gray-900 flex justify-around items-center py-2.5 text-xl text-gray-400 z-40 bg-black/90 backdrop-blur-md">
+      <button onclick="switchPage('feed')" id="navFeed" class="text-sky-400 transition p-2"><i class="fas fa-home"></i></button>
+      <button onclick="switchPage('explore')" id="navExplore" class="hover:text-sky-400 transition p-2"><i class="fas fa-search"></i></button>
+      
+      <button onclick="openTringoModal()" title="Tringo AI" class="transition p-1 flex items-center justify-center group">
+        <svg class="w-9 h-9 text-[#00f0ff] filter drop-shadow-[0_0_12px_#00f0ff] drop-shadow-[0_0_20px_#00f0ff] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        </svg>
+      </button>
+
+      <button onclick="switchPage('notif')" id="navNotif" class="hover:text-sky-400 transition p-2"><i class="far fa-bell"></i></button>
+      <button onclick="switchPage('profile')" id="navProfile" class="hover:text-sky-400 transition p-2"><i class="far fa-user"></i></button>
+    </nav>
+
+  </div>
+
+  <script>
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('authPassword');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+      }
+    }
+  </script>
+  
+  <script src="auth.js?v=12.0"></script>
+  <script src="algorithm.js?v=12.0"></script>
+  <script src="components.js?v=12.0"></script>
+  <script src="app.js?v=12.0"></script>
+</body>
+        </html>
+        
