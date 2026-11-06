@@ -18,7 +18,6 @@ function escapeHTML(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
-// Load saved profile customization from localStorage on start
 function loadSavedProfileToUI() {
   const savedName = localStorage.getItem('pktweed_profile_name');
   const savedHandle = localStorage.getItem('pktweed_profile_handle');
@@ -46,18 +45,13 @@ function loadSavedProfileToUI() {
   if (savedAvatar) {
     const avatarBig = document.getElementById('profileAvatarBig');
     const headerAvatar = document.getElementById('headerUserAvatar');
-    if (avatarBig) {
-      avatarBig.innerHTML = `<img src="${savedAvatar}" class="w-full h-full rounded-full object-cover">`;
-    }
-    if (headerAvatar) {
-      headerAvatar.innerHTML = `<img src="${savedAvatar}" class="w-full h-full rounded-full object-cover">`;
-    }
+    if (avatarBig) avatarBig.innerHTML = `<img src="${savedAvatar}" class="w-full h-full rounded-full object-cover">`;
+    if (headerAvatar) headerAvatar.innerHTML = `<img src="${savedAvatar}" class="w-full h-full rounded-full object-cover">`;
   }
 
   const followersCountEl = document.getElementById('profileFollowersCount');
   if (followersCountEl) followersCountEl.innerText = savedFollowers;
 
-  // Auto Green Tick check if followers >= 10,000
   const tickElement = document.getElementById('profileGreenTick');
   if (tickElement) {
     if (savedFollowers >= 10000) {
@@ -124,7 +118,6 @@ function renderPostElement(post, prepend = true) {
         ${escapeHTML(currentUserName[0])}
       </div>
       <div class="w-full relative">
-        
         <div class="absolute right-0 top-0">
           <button onclick="togglePostDropdown('${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
             <i class="fas fa-ellipsis-v"></i>
@@ -158,7 +151,6 @@ function renderPostElement(post, prepend = true) {
           </div>
           <div id="cm-list-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
         </div>
-
       </div>
     </div>
   `;
@@ -203,7 +195,6 @@ function renderProfilePosts(posts) {
           ${escapeHTML(currentUserName[0])}
         </div>
         <div class="w-full relative">
-          
           <div class="absolute right-0 top-0">
             <button onclick="togglePostDropdown('prof-${post.id}')" class="text-gray-400 hover:text-white p-2 rounded-full transition">
               <i class="fas fa-ellipsis-v"></i>
@@ -238,7 +229,6 @@ function renderProfilePosts(posts) {
             </div>
             <div id="cm-list-prof-${post.id}" class="space-y-1.5 text-xs text-gray-300"></div>
           </div>
-
         </div>
       </div>
     `;
@@ -246,7 +236,6 @@ function renderProfilePosts(posts) {
   });
 }
 
-// PROFILE EDIT MODAL HANDLERS
 function openEditProfileModal() {
   document.getElementById('editProfileModal')?.classList.remove('hidden');
   document.getElementById('editNameInput').value = document.getElementById('profileNameDisplay')?.innerText || 'Makki';
@@ -421,4 +410,9 @@ function toggleBookmark(btn, pid) {
     icon.classList.replace('far', 'fas');
     btn.classList.add('text-sky-400');
     if (postElement && !savedPostsData.some(p => p.id === cleanId)) {
-      savedPostsData.push({ id: cleanId, 
+      savedPostsData.push({ id: cleanId, html: postElement.innerHTML });
+    }
+  } else {
+    icon.classList.replace('fas', 'far');
+    btn.classList.remove('text-sky-400');
+    savedPostsData = savedPostsData.filter(p => p.id !== clea
