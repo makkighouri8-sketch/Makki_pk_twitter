@@ -1,4 +1,4 @@
-/* PkTweed - UI Components (components.js) - Stable Version with Saved Bookmarks & 3-Dots Menu */
+/* PkTweed - UI Components (components.js) - Borderless Clean X-Style Version v12.0 */
 
 let activeMedia = null;
 let savedPostsData = [];
@@ -54,7 +54,8 @@ function renderPostElement(post, prepend = true) {
   if (!timeline || !post) return;
 
   const article = document.createElement('article');
-  article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg post-item';
+  // Borderless X-Style layout (Pure black background with clean bottom line)
+  article.className = 'p-4 bg-black border-b border-gray-900 hover:bg-gray-950/40 transition-all duration-200 post-item';
   article.id = 'post-' + post.id;
 
   let mediaHtml = '';
@@ -91,7 +92,7 @@ function renderPostElement(post, prepend = true) {
         </div>
         <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
         ${mediaHtml}
-        <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
+        <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-2 pt-1">
           <button onclick="toggleCommentBox('${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-${post.id}">${post.comments_count || 0}</span></button>
           <button onclick="toggleRetweet(this, '${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
           <button onclick="toggleLike(this, '${post.id}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
@@ -99,7 +100,7 @@ function renderPostElement(post, prepend = true) {
           <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
         </div>
 
-        <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+        <div id="commentSection-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-900">
           <div class="flex gap-2 mb-2">
             <input type="text" id="cm-input-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
             <button onclick="addComment('${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
@@ -132,7 +133,7 @@ function renderProfilePosts(posts) {
   profContainer.innerHTML = '';
   myPosts.forEach(post => {
     const article = document.createElement('article');
-    article.className = 'p-4 my-3 mx-2 bg-gray-900/60 border border-gray-800/80 rounded-2xl hover:border-sky-500/40 transition-all duration-300 shadow-lg post-item relative text-left';
+    article.className = 'p-4 bg-black border-b border-gray-900 hover:bg-gray-950/40 transition-all duration-200 post-item relative text-left';
     article.id = 'profile-post-' + post.id;
 
     let mediaHtml = '';
@@ -168,7 +169,7 @@ function renderProfilePosts(posts) {
           <p class="text-white mt-2 text-sm leading-relaxed">${escapeHTML(post.content || '')}</p>
           ${mediaHtml}
           
-          <div class="flex justify-between text-gray-500 text-sm mt-4 max-w-md pr-2 border-t border-gray-800/40 pt-2">
+          <div class="flex justify-between text-gray-500 text-sm mt-3 max-w-md pr-2 pt-1">
             <button onclick="toggleCommentBox('prof-${post.id}')" class="hover:text-sky-400 flex items-center gap-2 text-gray-500 transition"><i class="far fa-comment"></i> <span id="cm-cnt-prof-${post.id}">${post.comments_count || 0}</span></button>
             <button onclick="toggleRetweet(this, 'prof-${post.id}')" class="hover:text-green-500 flex items-center gap-2 text-gray-500"><i class="fas fa-retweet"></i> <span class="rt-cnt">${post.retweets || 0}</span></button>
             <button onclick="toggleLike(this, 'prof-${post.id}')" class="hover:text-pink-500 flex items-center gap-2 text-gray-500"><i class="far fa-heart"></i> <span class="like-cnt">${post.likes || 0}</span></button>
@@ -176,7 +177,7 @@ function renderProfilePosts(posts) {
             <button onclick="sharePost()" class="hover:text-sky-400 text-gray-500 transition"><i class="far fa-share-square"></i></button>
           </div>
 
-          <div id="commentSection-prof-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-800/60">
+          <div id="commentSection-prof-${post.id}" class="hidden mt-3 pt-3 border-t border-gray-900">
             <div class="flex gap-2 mb-2">
               <input type="text" id="cm-input-prof-${post.id}" placeholder="Write a reply..." class="w-full bg-gray-950 border border-gray-800 text-xs text-white rounded-full px-3 py-1.5 focus:outline-none focus:border-sky-500">
               <button onclick="addComment('prof-${post.id}')" class="bg-sky-500 text-black font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-sky-400 transition">Reply</button>
@@ -210,7 +211,7 @@ function renderSavedBookmarks() {
   container.innerHTML = '';
   savedPostsData.forEach(item => {
     const wrap = document.createElement('div');
-    wrap.className = 'bg-gray-900/40 border border-gray-800 rounded-2xl p-3 text-left mb-3';
+    wrap.className = 'bg-black border-b border-gray-900 p-3 text-left mb-3';
     wrap.innerHTML = item.html;
     container.appendChild(wrap);
   });
@@ -422,5 +423,5 @@ function processModalMedia(e) {
 function removeModalMedia() {
   activeMedia = null;
   document.getElementById('modalMediaBox')?.classList.add('hidden');
-                  }
-                        
+            }
+            
